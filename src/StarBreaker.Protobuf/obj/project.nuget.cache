@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "jCwnEfjvJRQ=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\pratt\\Desktop\\StarBreaker\\src\\StarBreaker.Protobuf\\StarBreaker.Protobuf.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\pratt\\.nuget\\packages\\google.protobuf\\3.30.2\\google.protobuf.3.30.2.nupkg.sha512",
+    "C:\\Users\\pratt\\.nuget\\packages\\grpc.core.api\\2.70.0\\grpc.core.api.2.70.0.nupkg.sha512",
+    "C:\\Users\\pratt\\.nuget\\packages\\grpc.reflection\\2.70.0\\grpc.reflection.2.70.0.nupkg.sha512"
+  ],
+  "logs": []
+}

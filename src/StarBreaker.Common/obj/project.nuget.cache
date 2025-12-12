@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "dgSpecHash": "0bsfpqf6Qjg=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\pratt\\Desktop\\StarBreaker\\src\\StarBreaker.Common\\StarBreaker.Common.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\pratt\\.nuget\\packages\\system.text.json\\9.0.4\\system.text.json.9.0.4.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1510",
+      "level": "Warning",
+      "message": "PackageReference System.Text.Json will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
+      "projectPath": "C:\\Users\\pratt\\Desktop\\StarBreaker\\src\\StarBreaker.Common\\StarBreaker.Common.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\pratt\\Desktop\\StarBreaker\\src\\StarBreaker.Common\\StarBreaker.Common.csproj",
+      "libraryId": "System.Text.Json",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
+}

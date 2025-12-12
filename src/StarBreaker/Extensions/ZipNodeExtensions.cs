@@ -1,0 +1,30 @@
+﻿using System.Globalization;
+using Humanizer;
+using StarBreaker.Extraction;
+
+namespace StarBreaker.Extensions;
+
+public static class ZipNodeExtensions
+{
+    public static string GetSizeText(this IP4kNode x)
+    {
+        return ((long)x.Size).Bytes().Humanize();
+    }
+
+    public static string GetDate(this IP4kNode x)
+    {
+        if (x is not IP4kFileNode file)
+            return "";
+
+        return file.LastModified.ToString("s", CultureInfo.InvariantCulture);
+    }
+
+    public static ICollection<IP4kNode> GetChildren(this IP4kNode x)
+    {
+        return x switch
+        {
+            IP4kDirectoryNode dir => dir.Children.Values,
+            _ => Array.Empty<IP4kNode>(),
+        };
+    }
+}

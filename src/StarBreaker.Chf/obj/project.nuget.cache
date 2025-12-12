@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "UPw347FRIoU=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\pratt\\Desktop\\StarBreaker\\src\\StarBreaker.Chf\\StarBreaker.Chf.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\pratt\\.nuget\\packages\\zstdsharp.port\\0.8.5\\zstdsharp.port.0.8.5.nupkg.sha512"
+  ],
+  "logs": []
+}
