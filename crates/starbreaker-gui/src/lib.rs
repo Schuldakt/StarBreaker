@@ -8,4 +8,5 @@ pub mod theme;
 pub mod panels;
 pub mod widgets;
 
+// Re-export main app for easy access
 pub use app::StarBreakerApp;

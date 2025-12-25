@@ -23,3 +23,6 @@ starbreaker-gui = { path = "crates/starbreaker-gui" }
 starbreaker-parsers = { path = "crates/starbreaker-parsers" }
 starbreaker-render = { path = "crates/starbreaker-render" }
 starbreaker-vfs = { path = "crates/starbreaker-vfs" }
+# GUI dependencies
+eframe = "0.29"
+egui = "0.29"
