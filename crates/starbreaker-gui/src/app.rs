@@ -3,6 +3,7 @@
 use crate::state::AppState;
 use crate::theme::Theme;
 use crate::panels::{FileBrowserPanel, PreviewPanel, StatusPanel, InspectorPanel, SearchPanel};
+use crate::widgets::ExportDialog;
 use eframe::egui;
 use std::sync::Arc;
 use parking_lot::RwLock;
@@ -30,6 +31,9 @@ pub struct StarBreakerApp {
     
     /// Search panel
     search: SearchPanel,
+    
+    /// Export dialog
+    export_dialog: ExportDialog,
 }
 
 impl StarBreakerApp {
@@ -46,7 +50,8 @@ impl StarBreakerApp {
             state: state.clone(),
             theme: Theme::dark(),
             file_browser: FileBrowserPanel::new(state.clone()),
-            preview: PreviewPanel::new(state.clone()),
+            preview: PreviewPanel::new(sta.clone()),
+            export_dialog: ExportDialog::new(statete.clone()),
             status: StatusPanel::new(state.clone()),
             inspector: InspectorPanel::new(state.clone()),
             search: SearchPanel::new(state),
@@ -58,12 +63,17 @@ impl StarBreakerApp {
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::O)) {
             // Open P4K file
             self.file_browser.open_archive_dialog();
-        }F)) {
+        }
+        
+        if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::F)) {
             // Toggle search
             self.search.toggle();
         }
         
-        if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::
+        if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::E)) {
+            // Export selected file
+            self.export_dialog.open();
+        }
         
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Q)) {
             // Quit application
@@ -87,7 +97,14 @@ impl eframe::App for StarBreakerApp {
                     }
                     
                     ui.separator();
+                    Export...").clicked() {
+                        self.export_dialog.open();
+                        ui.close_menu();
+                    }
                     
+                    ui.separator();
+                    
+                    if ui.button("
                     if ui.button("Quit").clicked() {
                         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                     }
@@ -121,7 +138,14 @@ impl eframe::App for StarBreakerApp {
         });
         
         // File browser (left panel)
-        eguInspector (right panel)
+        egui::SidePanel::left("file_browser")
+            .default_width(300.0)
+            .resizable(true)
+            .show(ctx, |ui| {
+                self.file_browser.show(ui);
+            });
+        
+        // Inspector (right panel)
         egui::SidePanel::right("inspector")
             .default_width(250.0)
             .resizable(true)
@@ -137,14 +161,10 @@ impl eframe::App for StarBreakerApp {
                 ui.separator();
             }
             
-            .resizable(true)
-            .show(ctx, |ui| {
-                self.file_browser.show(ui);
-            });
-        
-        // Preview panel (center)
-        egui::CentralPanel::default().show(ctx, |ui| {
             self.preview.show(ui);
         });
+        
+        // Show export dialog if open
+        self.export_dialog.show(ctx);
     }
 }

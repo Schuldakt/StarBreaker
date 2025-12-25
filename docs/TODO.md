@@ -317,9 +317,9 @@ This document tracks all development tasks, organized by priority and component.
 
 ### Export Dialog
 
-- [ ] 📋 Format selection
-- [ ] 📋 Output path selection
-- [ ] 📋 Options configuration
+- [x] ✅ Format selection
+- [x] ✅ Output path selection
+- [x] ✅ Options configuration
 - [ ] 📋 Progress display
 - [ ] 📋 Batch export queue
 
