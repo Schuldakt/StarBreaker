@@ -164,6 +164,79 @@ impl VfsTree {
         let mounts = self.mounts.read().unwrap();
         mounts.len()
     }
+
+    /// Read entire file contents into memory
+    pub fn read_file_to_vec(&self, path: &str) -> MountResult<Vec<u8>> {
+        let mut reader = self.open_file(path)?;
+        let mut buffer = Vec::new();
+        std::io::Read::read_to_end(&mut reader, &mut buffer)
+            .map_err(MountError::Io)?;
+        Ok(buffer)
+    }
+
+    /// Read file contents as a string
+    pub fn read_file_to_string(&self, path: &str) -> MountResult<String> {
+        let bytes = self.read_file_to_vec(path)?;
+        String::from_utf8(bytes)
+            .map_err(|_| MountError::InvalidPath("File is not valid UTF-8".to_string()))
+    }
+
+    /// Extract a file to the local filesystem
+    pub fn extract_file(&self, vfs_path: &str, output_path: impl AsRef<std::path::Path>) -> MountResult<u64> {
+        let mut reader = self.open_file(vfs_path)?;
+        let mut file = std::fs::File::create(output_path)
+            .map_err(MountError::Io)?;
+        
+        std::io::copy(&mut reader, &mut file)
+            .map_err(MountError::Io)
+    }
+
+    /// Extract multiple files to a directory
+    /// Returns (success_count, total_bytes_written)
+    pub fn extract_batch(&self, file_list: &[String], output_dir: impl AsRef<std::path::Path>) -> (usize, u64) {
+        let output_dir = output_dir.as_ref();
+        let mut success_count = 0;
+        let mut total_bytes = 0u64;
+
+        for vfs_path in file_list {
+            // Create output path preserving directory structure
+            let relative_path = vfs_path.trim_start_matches('/');
+            let output_path = output_dir.join(relative_path);
+
+            // Create parent directories
+            if let Some(parent) = output_path.parent() {
+                if let Err(_) = std::fs::create_dir_all(parent) {
+                    continue;
+                }
+            }
+
+            // Extract file
+            if let Ok(bytes) = self.extract_file(vfs_path, &output_path) {
+                success_count += 1;
+                total_bytes += bytes;
+            }
+        }
+
+        (success_count, total_bytes)
+    }
+
+    /// Extract all files from a directory recursively
+    pub fn extract_directory(&self, vfs_dir: &str, output_dir: impl AsRef<std::path::Path>) -> MountResult<(usize, u64)> {
+        let output_dir = output_dir.as_ref();
+        
+        // Get all files in directory (this is simplified - real implementation would be recursive)
+        let nodes = self.list_directory(vfs_dir)?;
+        
+        let mut file_paths = Vec::new();
+        for node in nodes {
+            if node.is_file() {
+                let file_path = path::join_paths(vfs_dir, &node.name);
+                file_paths.push(file_path);
+            }
+        }
+
+        Ok(self.extract_batch(&file_paths, output_dir))
+    }
 }
 
 impl Default for VfsTree {

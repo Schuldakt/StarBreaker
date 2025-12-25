@@ -30,7 +30,9 @@ pub mod mount;
 pub mod path;
 pub mod tree;
 pub mod search;
+pub mod stream;
 
 pub use node::{VfsNode, NodeType, NodeMetadata};
 pub use mount::{MountPoint, MountError, MountResult, P4kMount, FilesystemMount};
 pub use tree::VfsTree;
+pub use stream::{VfsStreamReader, ChunkedReader};
