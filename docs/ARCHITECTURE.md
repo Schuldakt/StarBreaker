@@ -1,4 +1,4 @@
-stardust/
+starbreaker/
 ├── Cargo.toml
 ├── Cargo.lock
 ├── build.rs                          # Build script for cross-compilation
@@ -7,7 +7,7 @@ stardust/
 │   ├── fonts/
 │   └── shaders/
 ├── crates/
-│   ├── stardust-core/               # Core parsing and data types
+│   ├── starbreaker-core/               # Core parsing and data types
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -28,7 +28,7 @@ stardust/
 │   │           ├── binary_reader.rs
 │   │           └── string_pool.rs
 │   │
-│   ├── stardust-parsers/            # All file format parsers
+│   ├── starbreaker-parsers/            # All file format parsers
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -75,7 +75,7 @@ stardust/
 │   │           ├── formats.rs
 │   │           └── combiner.rs
 │   │
-│   ├── stardust-vfs/                # Virtual File System
+│   ├── starbreaker-vfs/                # Virtual File System
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -85,7 +85,7 @@ stardust/
 │   │       ├── mount.rs
 │   │       └── search.rs
 │   │
-│   ├── stardust-datacore/           # Game data extraction
+│   ├── starbreaker-datacore/           # Game data extraction
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -100,7 +100,7 @@ stardust/
 │   │       ├── stats.rs
 │   │       └── localization.rs
 │   │
-│   ├── stardust-export/             # Export functionality
+│   ├── starbreaker-export/             # Export functionality
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -122,7 +122,7 @@ stardust/
 │   │           ├── mod.rs
 │   │           └── serializers.rs
 │   │
-│   ├── stardust-render/             # 3D preview rendering
+│   ├── starbreaker-render/             # 3D preview rendering
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -136,7 +136,7 @@ stardust/
 │   │           ├── pbr.wgsl
 │   │           └── preview.wgsl
 │   │
-│   └── stardust-gui/                # GUI application
+│   └── starbreaker-gui/                # GUI application
 │       ├── Cargo.toml
 │       └── src/
 │           ├── lib.rs

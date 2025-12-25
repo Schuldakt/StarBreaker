@@ -32,7 +32,7 @@ pub trait AnyParser: Send + Sync {
 }
 
 impl<T: Parser + 'static> AnyParser for T {
-    fn name(&self) -> &std {
+    fn name(&self) -> &str {
         Parser::name(self)
     }
 
@@ -54,7 +54,7 @@ impl<T: Parser + 'static> AnyParser for T {
 }
 
 /// Fctory function typoe for creating parser instances
-pub type ParserFactoy = Box<dyn Fn() -> Arc<dyn AnyParser> + Send + Sync>;
+pub type ParserFactory = Box<dyn Fn() -> Arc<dyn AnyParser> + Send + Sync>;
 
 /// Registration entry for a parser
 pub struct ParserRegistration {
@@ -65,7 +65,7 @@ pub struct ParserRegistration {
     /// Description of what this parser handles
     pub description: String,
     /// File extensions handled (lowercase)
-    pub exentions: Vec<String>,
+    pub extensions: Vec<String>,
     /// Priority for extension conflics (higher = preferred)
     pub priority: i32,
     /// Factory function to create parser instance
@@ -86,8 +86,8 @@ impl ParserRegistry {
     /// Create a new empty registry
     pub fn new() -> Self {
         Self {
-            parsers: RwLock::new(HasMap::new()),
-            extension_map: RwLock::new(HasMap::new()),
+            parsers: RwLock::new(HashMap::new()),
+            extension_map: RwLock::new(HashMap::new()),
             instances: RwLock::new(HashMap::new()),
         }
     }
@@ -99,7 +99,7 @@ impl ParserRegistry {
         // Check for duplicate ID
         {
             let parsers = self.parsers.read().map_err(|_| RegistryError::LockPoisoned)?;
-            if parsers.contins_key(&id) {
+            if parsers.contains_key(&id) {
                 return Err(RegistryError::DuplicateId(id));
             }
         }
@@ -180,7 +180,7 @@ impl ParserRegistry {
     }
 
     /// Get a parser for a file extension
-    pub fn get_for_extension(&self, ext: &str) -> Result<Arc<dyn AnyParser>, RegostryError> {
+    pub fn get_for_extension(&self, ext: &str) -> Result<Arc<dyn AnyParser>, RegistryError> {
         let ext_lower = ext.to_lowercase().trim_start_matches('.').to_string();
 
         let id = {
@@ -198,7 +198,7 @@ impl ParserRegistry {
     pub fn get_for_path(&self, path: &Path) -> Result<Arc<dyn AnyParser>, RegistryError> {
         // Try extension first
         if let Some(ext) = path.extension() {
-            if let Ok(parser) = self.get_for_extensions(&ext.to_string_lossy()) {
+            if let Ok(parser) = self.get_for_extension(&ext.to_string_lossy()) {
                 return Ok(parser);
             }
         }
@@ -243,7 +243,7 @@ impl ParserRegistry {
 
         // This is safe because we verified the type
         // However, we can't actually downcast Arc<dyn AnyParser> to Arc<T>
-        // So we need a different approach - store typed isntances separately
+        // So we need a different approach - store typed instances separately
         Err(RegistryError::TypeMismatch {
             expected: std::any::type_name::<T>().to_string(),
             found: "dynamic parser".to_string(),
@@ -274,7 +274,7 @@ pub enum RegistryError {
     DuplicateId(String),
 
     #[error("Parser with ID '{0}' not found")]
-    NotFound(string),
+    NotFound(String),
 
     #[error("No parser available for extensions '.{0}'")]
     NoParserForExtension(String),
@@ -438,7 +438,7 @@ mod tests {
         registry.register(registration).unwrap();
 
         let parser = registry.get("mock").unwrap();
-        asset_eq!(parser.name(), "Mock Parser");
+        assert_eq!(parser.name(), "Mock Parser");
     }
 
     #[test]

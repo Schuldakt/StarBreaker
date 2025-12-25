@@ -38,13 +38,13 @@ pub enum ParseError {
     MissingField(String),
 
     #[error("Unsupported feature: {0}")]
-    UnsupportedFeatures(String),
+    UnsupportedFeature(String),
 
-    #[error("Buffer overlfow: requested {requested} bytes, available {available}")]
-    BufferOverflow { requested: usize, availabled: usize },
+    #[error("Buffer overflow: requested {requested} bytes, available {available}")]
+    BufferOverflow { requested: usize, available: usize },
 
     #[error("Unknown chunk type: 0x{chunk_type:08X}")]
-    UnknownChunkType { chunkt_type: u32 },
+    UnknownChunkType { chunk_type: u32 },
 
     #[error("Nested error in {context}: {source}")]
     Nested {
@@ -64,13 +64,13 @@ impl ParseError {
     }
 }
 
-/// Result type alias for pasing operations
+/// Result type alias for parsing operations
 pub type ParseResult<T> = Result<T, ParseError>;
 
 /// Progress callback for long-running parse operations
 pub type ProgressCallback = Box<dyn Fn(ParseProgress) + Send + Sync>;
 
-/// Progress infromation during parsing
+/// Progress information during parsing
 #[derive(Debug, Clone)]
 pub struct ParseProgress {
     /// Current phase of parsing
@@ -84,7 +84,7 @@ pub struct ParseProgress {
     /// Number of items processed
     pub items_processed: u64,
     /// Total items to process (if known)
-    pub total_items: Optin<u64>,
+    pub total_items: Option<u64>,
 }
 
 impl ParseProgress {
@@ -126,15 +126,15 @@ pub struct ParseOptions {
     pub strict_validation: bool,
     /// Whether to parse nested/referenced files
     pub parse_nested: bool,
-    /// Maximum nesting depth for recusive structures
+    /// Maximum nesting depth for recursive structures
     pub max_nesting_depth: u32,
-    /// Whether to skip uknown chunk types instead of erroring
+    /// Whether to skip unknown chunk types instead of erroring
     pub skip_unknown_chunks: bool,
     /// Memory limit for decompression buffers (in bytes)
     pub decompression_memory_limit: usize,
     /// Whether to use memory mapping for large files
     pub use_memory_mapping: bool,
-    /// Minimum file size to enable memory ampping
+    /// Minimum file size to enable memory mapping
     pub memory_mapping_threshold: u64,
 }
 
@@ -186,7 +186,7 @@ pub trait Parser: Send + Sync {
         &self,
         reader: R,
         options: &ParseOptions,
-        progress: Options<ProgressCallback>,
+        progress: Option<ProgressCallback>,
     ) -> ParseResult<Self::Output>;
 
     /// Parse from a file path
@@ -199,7 +199,7 @@ pub trait Parser: Send + Sync {
         &self,
         path: &Path,
         options: &ParseOptions,
-        progress: Options<ProgressCallback>,
+        progress: Option<ProgressCallback>,
     ) -> ParseResult<Self::Output> {
         let file = std::fs::File::open(path)?;
 
@@ -222,7 +222,7 @@ pub trait Parser: Send + Sync {
         options: &ParseOptions,
         progress: Option<ProgressCallback>,
     ) -> ParseResult<Self::Output> {
-        // Defaullt implementation falls back to standard I/O
+        // Default implementation falls back to standard I/O
         let file = std::fs::File::open(path)?;
         let reader = std::io::BufReader::new(file);
         self.parse_with_options(reader, options, progress)
@@ -231,7 +231,7 @@ pub trait Parser: Send + Sync {
     /// Check if this parser can handle the given file
     fn can_parse(&self, path: &Path) -> bool {
         // Check extension
-        if let Seom(ext) = path.extension() {
+        if let Some(ext) = path.extension() {
             let ext_str = ext.to_string_lossy().to_lowercase();
             if self.extensions().iter().any(|e| e.to_lowercase() == ext_str) {
                 return true;
@@ -334,7 +334,7 @@ pub trait HumanReadable {
     /// Convert to formatted JSON
     fn to_json(&self) -> serde_json::Value;
 
-    /// Convert to formatted YAML (optiona, returns JSON by default)
+    /// Convert to formatted YAML (optional, returns JSON by default)
     fn to_yaml(&self) -> String {
         serde_yaml::to_string(&self.to_json()).unwrap_or_else(|_| self.to_readable_string())
     }
@@ -352,7 +352,7 @@ pub trait Exportable {
     fn export_binary(&self) -> ParseResult<Vec<u8>>;
 }
 
-#[cgf(test)]
+#[cfg(test)]
 mod tests {
     use super::*;
 

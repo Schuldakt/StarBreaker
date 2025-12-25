@@ -1,4 +1,4 @@
-// stardust-parsers/src/dcb/mod.rs
+// starbreaker-parsers/src/dcb/mod.rs
 //! DataCore Binary (DCB) Parser
 //!
 //! The DCB format is Star Citizen's binary data format that stores all game
@@ -547,6 +547,24 @@ impl DcbParser {
                 RecordValue::Vec3([x, y, z])
             }
             
+            DataType::Vec4 => {
+                let mut buf = [0u8; 16];
+                reader.read_exact(&mut buf)?;
+                let x = f32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]);
+                let y = f32::from_le_bytes([buf[4], buf[5], buf[6], buf[7]]);
+                let z = f32::from_le_bytes([buf[8], buf[9], buf[10], buf[11]]);
+                let w = f32::from_le_bytes([buf[12], buf[13], buf[14], buf[15]]);
+                RecordValue::Vec4([x, y, z, w])
+            }
+            
+            DataType::LocaleString => {
+                let mut buf = [0u8; 4];
+                reader.read_exact(&mut buf)?;
+                let offset = u32::from_le_bytes(buf);
+                let s = strings.get_by_offset(offset).cloned().unwrap_or_default();
+                RecordValue::LocaleString { key: offset.to_string(), value: s }
+            }
+            
             DataType::Enum => {
                 let mut buf = [0u8; 4];
                 reader.read_exact(&mut buf)?;
@@ -557,7 +575,7 @@ impl DcbParser {
                 // Array handling - read count first
                 let mut count_buf = [0u8; 4];
                 reader.read_exact(&mut count_buf)?;
-                let count = u32::from_le_bytes(count_buf) as usize;
+                let _count = u32::from_le_bytes(count_buf) as usize;
                 
                 // For now, return as bytes
                 RecordValue::Array(vec![])

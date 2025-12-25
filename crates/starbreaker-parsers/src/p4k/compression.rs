@@ -115,7 +115,7 @@ impl P4kCompression {
         let mut output = Vec::with_capacity(expected_size);
 
         decoder.read_to_end(&mut output)
-            .map_err(|e| ParseError::DecompressionFaild(
+            .map_err(|e| ParseError::DecompressionFailed(
                 format!("LZ4 frame decompression failed: {}", e)
             ))?;
 
@@ -255,7 +255,7 @@ mod tests {
             data.len()
         ).unwrap();
 
-        assert_eq!(data.as_slice(), decompression.as_slice());
+        assert_eq!(data.as_slice(), decompressed.as_slice());
     }
 
     #[test]

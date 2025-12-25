@@ -27,7 +27,7 @@ pub struct P4kEntry {
     pub mod_date: u16,
     /// Whether entry is encrypted
     pub is_encrypted: bool,
-    /// Wehther entry is a directory
+    /// Whether entry is a directory
     pub is_directory: bool,
 }
 

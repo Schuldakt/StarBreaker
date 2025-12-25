@@ -1,4 +1,4 @@
-// stardust-parsers/src/dcb/structs.rs
+// starbreaker-parsers/src/dcb/structs.rs
 //! Structure and property definitions for DataCore Binary format
 
 use serde::{Deserialize, Serialize};

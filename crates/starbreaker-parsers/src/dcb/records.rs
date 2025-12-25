@@ -1,4 +1,4 @@
-// stardust-parsers/src/dcb/records.rs
+// starbreaker-parsers/src/dcb/records.rs
 //! Record types and values for DataCore Binary format
 
 use std::collections::HashMap;

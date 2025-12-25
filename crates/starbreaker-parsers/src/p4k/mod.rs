@@ -3,7 +3,7 @@
 //! 
 //! The P4K format is Star Citizen's main archive format, derived from the
 //! ZIP format but with modifications. It contains compressed game assets
-//! including textures, models, sounds, and data fils.
+//! including textures, models, sounds, and data files.
 //! 
 //! # Format Structure
 //! ```text
@@ -55,7 +55,7 @@ const P4K_MAGIC: &[u8] = &[0x50, 0x4B, 0x03, 0x04]; // "PK\x03\x04"
 /// End of central directory signature
 const EOCD_SIGNATURE: u32 = 0x06054B50;
 
-/// Central directroy file header signature
+/// Central directory file header signature
 const CD_SIGNATURE: u32 = 0x02014B50;
 
 /// Local file header signature
@@ -85,7 +85,7 @@ impl From<u16> for CompressionMethod {
             8 => CompressionMethod::Deflate,
             93 => CompressionMethod::Zstd,
             99 => CompressionMethod::Lz4,
-            other => CompressionMethod::Unkown(other),
+            other => CompressionMethod::Unknown(other),
         }
     }
 }
@@ -108,7 +108,7 @@ impl P4kParser {
     }
 
     /// Parse the end of central directory recrod
-    fn parse_eocde<R: Read + Seek>(&self, reader: &mut R) -> ParseResult<EndOfCentralDirectory> {
+    fn parse_eocd<R: Read + Seek>(&self, reader: &mut R) -> ParseResult<EndOfCentralDirectory> {
         // Seek to end and search backwards for EOCD signature
         let file_size = reader.seek(SeekFrom::End(0))?;
 
@@ -126,7 +126,7 @@ impl P4kParser {
             .ok_or_else(|| ParseError::InvalidMagic {
                 expected: sig_bytes.to_vec(),
                 found: vec![],
-            });
+            })?;
 
         let eocd_abs_offset = search_start + eocd_offset as u64;
         reader.seek(SeekFrom::Start(eocd_abs_offset))?;
@@ -144,7 +144,7 @@ impl P4kParser {
         let comment_length  = u16::from_le_bytes([eocd_data[20], eocd_data[21]]);
 
         // Check for ZIP64
-        let (cd_offset, total_entries) = if cd_offset == 0xFFFFFFF || total_entries == 0xFFFF {
+        let (cd_offset, total_entries) = if cd_offset == 0xFFFFFFFF || total_entries == 0xFFFF {
             self.parse_zip64_eocd(reader, eocd_abs_offset)?
         } else {
             (cd_offset as u64, total_entries as u64)
@@ -216,7 +216,7 @@ impl P4kParser {
     }
 
     /// Parse central directory entries
-    fn parse_central_directory<R: Read + Seel>(
+    fn parse_central_directory<R: Read + Seek>(
         &self,
         reader: &mut R,
         eocd: &EndOfCentralDirectory,
@@ -236,7 +236,7 @@ impl P4kParser {
                         phase: ParsePhase::Indexing,
                         bytes_processed: reader.stream_position()?,
                         total_bytes: Some(eocd.cd_offset + eocd.cd_size),
-                        current_item: etnries.last().map(|e| e.path.clone()),
+                        current_item: entries.last().map(|e| e.path.clone()),
                         items_processed: i,
                         total_items: Some(eocd.total_entries),
                     });
@@ -248,7 +248,7 @@ impl P4kParser {
     }
 
     /// Parse a single central directory entry
-    fn parse_cd_entry<R: Read + Seel>(&self, reader: &mut R) -> ParseResult<P4kEntry> {
+    fn parse_cd_entry<R: Read + Seek>(&self, reader: &mut R) -> ParseResult<P4kEntry> {
         let mut header = [0u8; 46];
         reader.read_exact(&mut header)?;
 
@@ -330,7 +330,7 @@ impl P4kParser {
                 // ZIP64 extra field
                 let mut field_pos = 0;
 
-                if uncompressed_size == 0xFFFFFFF && field_post + 8 <= size {
+                if uncompressed_size == 0xFFFFFFFF && field_pos + 8 <= size {
                     uncompressed = u64::from_le_bytes([
                         extra[pos + field_pos], extra[pos + field_pos + 1],
                         extra[pos + field_pos + 2], extra[pos + field_pos + 3],
@@ -340,7 +340,7 @@ impl P4kParser {
                     field_pos += 8;
                 }
 
-                if compressed_szie == 0xFFFFFFF && field_pos + 8 <= size {
+                if compressed_size == 0xFFFFFFF && field_pos + 8 <= size {
                     compressed = u64::from_le_bytes([
                         extra[pos + field_pos], extra[pos + field_pos + 1],
                         extra[pos + field_pos + 2], extra[pos + field_pos + 3],
@@ -441,7 +441,7 @@ impl Parser for P4kParser {
         reader.read_exact(&mut magic)?;
 
         if magic != P4K_MAGIC {
-            return Err(ParserError::InvalidMagic {
+            return Err(ParseError::InvalidMagic {
                 expected: P4K_MAGIC.to_vec(),
                 found: magic.to_vec(),
             });
