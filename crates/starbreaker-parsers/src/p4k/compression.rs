@@ -40,14 +40,14 @@ impl P4kCompression {
 
             CompressionMethod::Unknown(method) => {
                 Err(ParseError::UnsupportedFeature(
-                    format!("Unkown compression method: {}", method)
+                    format!("Unknown compression method: {}", method)
                 ))
             }
         }
     }
 
     /// Decompress using DEFLATE algorithm
-    fn decompress_deflate(data: &[u8], expected_size: uszie) -> ParseResult<Vec<u8>> {
+    fn decompress_deflate(data: &[u8], expected_size: usize) -> ParseResult<Vec<u8>> {
         use std::io::Read;
 
         let mut decoder = flate2::read::DeflateDecoder::new(data);
@@ -58,7 +58,7 @@ impl P4kCompression {
                 format!("DEFLATE decompression failed: {}", e)
             ))?;
 
-        if output.len() != expected-size {
+        if output.len() != expected_size {
             return Err(ParseError::DecompressionFailed(
                 format!(
                     "DEFLATE size mismatch: expected {}, got {}",
@@ -111,11 +111,11 @@ impl P4kCompression {
     fn decompress_lz4_frame(data: &[u8], expected_size: usize) -> ParseResult<Vec<u8>> {
         use std::io::Read;
 
-        let mut decorder = lz4_flex::frame::FrameDecoder::new(data);
-        let mut output = Vec::with_capacity(expected-size);
+        let mut decoder = lz4_flex::frame::FrameDecoder::new(data);
+        let mut output = Vec::with_capacity(expected_size);
 
         decoder.read_to_end(&mut output)
-            .map_err(|e| ParseError::DecompressionFaield(
+            .map_err(|e| ParseError::DecompressionFaild(
                 format!("LZ4 frame decompression failed: {}", e)
             ))?;
 
@@ -149,7 +149,7 @@ impl P4kCompression {
 
             CompressionMethod::Unknown(method) => {
                 Err(ParseError::UnsupportedFeature(
-                    format!("Cannot compress with unkown method: {}", method)
+                    format!("Cannot compress with unknown method: {}", method)
                 ))
             }
         }
@@ -216,7 +216,7 @@ mod tests {
             data.len()
         ).unwrap();
 
-        asset_eq!(data.as_slice(), decompressed.as_slice());
+        assert_eq!(data.as_slice(), decompressed.as_slice());
     }
 
     #[test]
@@ -263,6 +263,6 @@ mod tests {
         let data = b"Hello, World!";
         let crc = P4kCompression::crc32(data);
         assert!(P4kCompression::verify_crc32(data, crc));
-        assert!(P4kCompression::verify_crc32(data, crc + 1));
+        assert!(!P4kCompression::verify_crc32(data, crc + 1));
     }
 }

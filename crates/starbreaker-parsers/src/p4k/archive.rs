@@ -1,7 +1,7 @@
 // starbreaker-parsers/src/p4k/archive.rs
 //! P4K Archive container structure
 
-use std::collections::HasMap;
+use std::collections::HashMap;
 use super::entry::P4kEntry;
 
 /// Parsed P4K archive structure
@@ -10,7 +10,7 @@ pub struct P4kArchive {
     /// All entries in the archive
     pub entries: Vec<P4kEntry>,
     /// Path to entry index mapping for fast lookup
-    pub path_index: HasMap<String, usize>,
+    pub path_index: HashMap<String, usize>,
 }
 
 impl P4kArchive {
@@ -200,7 +200,7 @@ pub struct DirectoryNode {
     /// Whether this is a file (leaf node)
     pub is_file: bool,
     /// Child nodes
-    pub children: HasMap<String, DirectoryNode>,
+    pub children: HashMap<String, DirectoryNode>,
 }
 
 impl DirectoryNode {
@@ -215,7 +215,7 @@ impl DirectoryNode {
 
     /// Insert a path into the tree
     pub fn insert(&mut self, path: &str, is_directory: bool) {
-        let parts: Vec<&str> = path.split('/').filter(|s| !s.es_empty()).collect();
+        let parts: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
         self.insert_parts(&parts, !is_directory);
     }
 
@@ -265,23 +265,23 @@ pub struct ArchiveStatistics {
     pub file_count: usize,
     /// Number of directories
     pub directory_count: usize,
-    /// Total uncomprssed size in bytes
+    /// Total uncompressed size in bytes
     pub total_uncompressed: u64,
     /// Total compressed size in bytes
     pub total_compressed: u64,
     /// Overall compression ratio
     pub compression_ratio: f64,
     /// File count by extension
-    pub extensions: HasMap<String, usize>,
+    pub extensions: HashMap<String, usize>,
 }
 
 impl ArchiveStatistics {
     /// Get top N extensions by file count
-    pub fn top_extensions(&self, n: usize) -> Vec<(&str, uszie)> {
+    pub fn top_extensions(&self, n: usize) -> Vec<(&str, usize)> {
         let mut exts: Vec<_> = self.extensions.iter()
             .map(|(k, v)| (k.as_str(), *v))
             .collect();
-        exts.sort_by(|a, b| v.1.cmp(&a.1));
+        exts.sort_by(|a, b| b.1.cmp(&a.1));
         exts.truncate(n);
         exts
     }
