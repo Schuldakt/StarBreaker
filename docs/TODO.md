@@ -185,15 +185,15 @@ This document tracks all development tasks, organized by priority and component.
 
 ### VFS Core (`starbreaker-vfs/`)
 
-- [ ] 📋 Define VFS node structure
-- [ ] 📋 Define mount point abstraction
-- [ ] 📋 Implement path resolution
-- [ ] 📋 File/directory enumeration
+- [x] ✅ Define VFS node structure
+- [x] ✅ Define mount point abstraction
+- [x] ✅ Implement path resolution
+- [x] ✅ File/directory enumeration
 
 ### Mount Points
 
-- [ ] 📋 P4K archive mount
-- [ ] 📋 Local filesystem mount
+- [x] ✅ P4K archive mount (stub)
+- [x] ✅ Local filesystem mount
 - [ ] 📋 DCB virtual folders (by struct type)
 - [ ] 📋 Overlay mount (multiple sources)
 
