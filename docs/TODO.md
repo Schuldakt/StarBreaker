@@ -1,6 +1,6 @@
 # StarBreaker - Development TODO
 
-> Last Updated: December 2024
+> Last Updated: December 2025
 
 This document tracks all development tasks, organized by priority and component. Check boxes indicate completion status.
 
@@ -47,25 +47,21 @@ This document tracks all development tasks, organized by priority and component.
 
 > These must be fixed before any other work
 
-- [ ] 🐛 🔴 **Fix duplicate import in lib.rs**
+- [x] ✅ **Fix duplicate import in lib.rs**
   - File: `crates/starbreaker-parsers/src/lib.rs`
-  - Issue: `RecordValue` is imported twice
-  - Fix: Remove duplicate from pub use statement
+  - Status: No duplicate imports found, exports are clean
 
-- [ ] 🐛 🔴 **Add missing DataCore struct**
+- [x] ✅ **Add missing DataCore struct**
   - File: `crates/starbreaker-parsers/src/dcb/datacore.rs`
-  - Issue: File is empty but struct is referenced
-  - Fix: Implement DataCore and DataCoreHeader structs
+  - Status: DataCore, DataCoreHeader, and LazyDataCore fully implemented
 
-- [ ] 🐛 🟠 **Fix incorrect test assertion**
+- [x] ✅ **Fix incorrect test assertion**
   - File: `crates/starbreaker-parsers/src/p4k/entry.rs`
-  - Issue: `test_extension()` asserts `model.cgf` has no extension
-  - Fix: Should assert `Some("cgf")`
+  - Status: Test correctly asserts `model.cgf` has extension `Some("cgf")`
 
-- [ ] 🐛 🟠 **Export CGF module from lib.rs**
+- [x] ✅ **Export CGF module from lib.rs**
   - File: `crates/starbreaker-parsers/src/lib.rs`
-  - Issue: CGF module exists but isn't exported
-  - Fix: Add `pub mod cgf` and re-exports
+  - Status: CGF module properly exported with all types
 
 ---
 
@@ -109,9 +105,9 @@ This document tracks all development tasks, organized by priority and component.
 - [x] ✅ All data types (bool, int, float, string, vec3, etc.)
 - [x] ✅ Reference resolution
 - [x] ✅ Build indices (struct, record)
-- [ ] 🔨 Implement DataCore container struct
+- [x] ✅ Implement DataCore container struct
+- [x] ✅ Lazy record loading (LazyDataCore with on-demand loading)
 - [ ] 📋 Binary XML (CryXml) fallback parser
-- [ ] 📋 Lazy record loading
 - [ ] 📋 String interning for memory efficiency
 
 ### Testing
@@ -138,22 +134,22 @@ This document tracks all development tasks, organized by priority and component.
 - [x] ✅ Bone hierarchy
 - [x] ✅ Bone transforms (local, bind pose, inverse bind pose)
 - [x] ✅ Bounding box calculations
-- [ ] 🔨 Parse Mesh chunks (0x1000)
-- [ ] 🔨 Parse Node chunks (0x100B)
-- [ ] 📋 Parse Material chunks (0x100C)
-- [ ] 📋 Parse CompiledBones (0xACDC0000)
-- [ ] 📋 Parse CompiledMesh (0xCCCC0000)
-- [ ] 📋 Parse MorphTargets
+- [x] ✅ Parse Mesh chunks (0x1000)
+- [x] ✅ Parse Node chunks (0x100B)
+- [x] ✅ Parse Material chunks (0x100C)
+- [x] ✅ Parse CompiledBones (0xACDC0000)
+- [x] ✅ Parse CompiledMesh (0xCCCC0000)
+- [x] ✅ Parse MorphTargets (CompiledMorphTargets 0xACDC0002)
 - [ ] 📋 Parse DataStream chunks
 - [ ] 📋 Physics proxy parsing
 
 ### DDS Parser (`starbreaker-parsers/src/dds/`)
 
-- [ ] 📋 🟠 Parse DDS header
-- [ ] 📋 🟠 Parse DX10 extended header
-- [ ] 📋 🟠 Detect texture format (BC1-BC7, RGBA, etc.)
-- [ ] 📋 🔴 **Split file combiner** (.dds.1, .dds.2, etc.)
-- [ ] 📋 Mipmap level extraction
+- [x] ✅ Parse DDS header
+- [x] ✅ Parse DX10 extended header
+- [x] ✅ Detect texture format (BC1-BC7, RGBA, etc.)
+- [x] ✅ **Split file combiner** (.dds.1, .dds.2, etc.)
+- [x] ✅ Mipmap level extraction
 - [ ] 📋 Cubemap/array texture support
 
 ### Additional Parsers
