@@ -269,9 +269,9 @@ impl P4kParser {
         let crc32               = u32::from_le_bytes([header[16], header[17], header[18], header[19]]);
         let compressed_size     = u32::from_le_bytes([header[20], header[21], header[22], header[23]]);
         let uncompressed_size   = u32::from_le_bytes([header[24], header[25], header[26], header[27]]);
-        let name_length         = u16::from_le_bytes([header[28], header[29]]) as usize;
-        let extra_length        = u16::from_le_bytes([header[30], header[31]]) as usize;
-        let comment_length      = u16::from_le_bytes([header[32], header[33]]) as usize;
+        let name_length       = u16::from_le_bytes([header[28], header[29]]) as usize;
+        let extra_length      = u16::from_le_bytes([header[30], header[31]]) as usize;
+        let comment_length    = u16::from_le_bytes([header[32], header[33]]) as usize;
         let disk_start          = u16::from_le_bytes([header[34], header[35]]);
         let internal_attrs      = u16::from_le_bytes([header[36], header[37]]);
         let external_attrs      = u32::from_le_bytes([header[38], header[39], header[40], header[41]]);
@@ -433,7 +433,7 @@ impl Parser for P4kParser {
     fn parse_with_options<R: Read + Seek>(
         &self,
         mut reader: R,
-        options: &ParseOptions,
+        _options: &ParseOptions,
         progress: Option<ProgressCallback>,
     ) -> ParseResult<Self::Output> {
         // Verify magic bytes

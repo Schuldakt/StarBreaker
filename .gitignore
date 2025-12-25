@@ -1,1 +1,153 @@
+# Rust
 /target
+**/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo
+Cargo.lock
+**/*.profraw
+
+# Build artifacts
+debug/
+release/
+build/
+dist/
+
+# Testing
+**/tests/tmp/
+**/.pytest_cache/
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# IDE - JetBrains (IntelliJ, CLion, RustRover)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# IDE - Vim
+*.swp
+*.swo
+*~
+.*.sw?
+
+# IDE - Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Backup files
+*.bak
+*.gho
+*.ori
+*.orig
+*.tmp
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Documentation build
+/docs/_build/
+/docs/.doctrees/
+site/
+
+# Profiling
+perf.data
+perf.data.old
+flamegraph.svg
+*.profdata
+
+# Coverage
+tarpaulin-report.html
+cobertura.xml
+lcov.info
+coverage/
+*.gcda
+*.gcno
+*.gcov
+
+# Benchmarks
+criterion/
+**/criterion/
+
+# Cache
+.cache/
+**/.cache/
+
+# Project-specific
+assets/temp/
+assets/cache/
+*.p4k.index
+*.dcb.cache
+extracted/
+output/
+exports/
+
+# CI/CD
+.gitlab-ci-local/
+
+# Misc
+*.diff
+*.patch
+.project
+.settings/
+.classpath

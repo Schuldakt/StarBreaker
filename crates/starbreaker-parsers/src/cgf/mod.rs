@@ -392,7 +392,7 @@ impl CgfParser {
             vertices.push(Vertex {
                 position,
                 normal: [0.0, 1.0, 0.0],
-                uv: [[0.0, 0.0]],
+                uv: vec![[0.0, 0.0]],
                 color: None,
                 tangent: None,
                 bone_weights: None,
@@ -417,7 +417,7 @@ impl CgfParser {
             let mut uv_data = [0u8; 8];
             reader.read_exact(&mut uv_data)?;
 
-            vertex.uv = [[
+            vertex.uv = vec![[
                 f32::from_le_bytes([uv_data[0], uv_data[1], uv_data[2], uv_data[3]]),
                 f32::from_le_bytes([uv_data[4], uv_data[5], uv_data[6], uv_data[7]]),
             ]];

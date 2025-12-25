@@ -44,13 +44,14 @@ mod records;
 mod structs;
 mod cryxml;
 
-pub use datacore::{DataCore, DataCoreHeader};
-pub use records::{Record, RecordValue, RecordRef};
+pub use datacore::{DataCore, DataCoreHeader, LazyDataCore};
+pub use records::{Record, RecordValue, RecordRef, LazyRecord};
 pub use structs::{StructDef, PropertyDef, DataType};
 
 use std::io::{Read, Seek, SeekFrom, BufReader};
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::path::Path;
 
 use crate::traits::{
     Parser, ParseResult, ParseError,
@@ -70,6 +71,8 @@ const BINXML_MAGIC: u32 = 0x4D584C42; // "BXLM"
 pub struct DcbParser {
     /// Cache parsed structures
     cache: parking_lot::RwLock<HashMap<String, Arc<DataCore>>>,
+    /// Cache for lazy-loaded structures
+    lazy_cache: parking_lot::RwLock<HashMap<String, Arc<LazyDataCore>>>,
 }
 
 impl DcbParser {
@@ -77,7 +80,121 @@ impl DcbParser {
     pub fn new() -> Self {
         Self {
             cache: parking_lot::RwLock::new(HashMap::new()),
+            lazy_cache: parking_lot::RwLock::new(HashMap::new()),
         }
+    }
+    
+    /// Parse file with lazy loading enabled
+    /// 
+    /// This loads only the file metadata, struct definitions, and record headers.
+    /// Record property values are loaded on-demand when accessed, significantly
+    /// reducing initial load time and memory usage for large DCB files.
+    /// 
+    /// # Benefits
+    /// - Fast initial load (only metadata)
+    /// - Low memory footprint (loads on demand)
+    /// - Ideal for browsing, searching, or selective access
+    /// - Good for very large DCB files (100k+ records)
+    /// 
+    /// # Example
+    /// ```no_run
+    /// use starbreaker_parsers::dcb::DcbParser;
+    /// use std::path::Path;
+    /// 
+    /// let parser = DcbParser::new();
+    /// let lazy_db = parser.parse_lazy(Path::new("data.dcb"))?;
+    /// 
+    /// // Only metadata loaded at this point
+    /// println!("Records: {}", lazy_db.record_count());
+    /// 
+    /// // Load specific record values on demand
+    /// if let Some(record) = lazy_db.records.first() {
+    ///     let values = lazy_db.load_record(record)?;
+    ///     // Values are now cached in memory
+    /// }
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn parse_lazy(&self, path: &Path) -> ParseResult<Arc<LazyDataCore>> {
+        let path_str = path.to_string_lossy().to_string();
+        
+        // Check cache
+        {
+            let cache = self.lazy_cache.read();
+            if let Some(cached) = cache.get(&path_str) {
+                return Ok(Arc::clone(cached));
+            }
+        }
+        
+        // Parse with lazy loading
+        let file = std::fs::File::open(path)?;
+        let mut reader = BufReader::new(file);
+        
+        let datacore = self.parse_lazy_impl(&mut reader, Some(path))?;
+        let arc = Arc::new(datacore);
+        
+        // Cache result
+        {
+            let mut cache = self.lazy_cache.write();
+            cache.insert(path_str, Arc::clone(&arc));
+        }
+        
+        Ok(arc)
+    }
+    
+    /// Internal lazy parsing implementation
+    fn parse_lazy_impl<R: Read + Seek>(
+        &self,
+        reader: &mut R,
+        file_path: Option<&Path>,
+    ) -> ParseResult<LazyDataCore> {
+        // Parse header
+        let header = self.parse_header(reader)?;
+        
+        // Parse string table
+        let strings = self.parse_string_table(reader, header.string_offset)?;
+        
+        // Parse struct definitions
+        let structs = self.parse_struct_definitions(
+            reader,
+            &header,
+            &strings,
+            None
+        )?;
+        
+        // Parse property definitions
+        let properties = self.parse_property_definitions(reader, &header, &strings)?;
+        
+        // Parse record metadata only (lazy)
+        let records = self.parse_records_lazy(
+            reader,
+            &header,
+            &strings,
+        )?;
+        
+        // Build indices
+        let mut struct_index = HashMap::new();
+        for (idx, s) in structs.iter().enumerate() {
+            struct_index.insert(s.name.clone(), idx);
+        }
+        
+        let mut record_index = HashMap::new();
+        for (idx, r) in records.iter().enumerate() {
+            record_index.insert(r.guid, idx);
+            if !r.name.is_empty() {
+                record_index.insert(r.id as u64, idx);
+            }
+        }
+        
+        Ok(LazyDataCore::new(
+            header,
+            strings,
+            structs,
+            properties,
+            records,
+            struct_index,
+            record_index,
+            file_path.map(|p| p.to_path_buf()),
+        ))
     }
     
     /// Parse the file header
@@ -341,6 +458,59 @@ impl DcbParser {
         }
         
         Ok(properties)
+    }
+    
+    /// Parse records metadata only (lazy loading)
+    fn parse_records_lazy<R: Read + Seek>(
+        &self,
+        reader: &mut R,
+        header: &DataCoreHeader,
+        strings: &StringTable,
+    ) -> ParseResult<Vec<LazyRecord>> {
+        reader.seek(SeekFrom::Start(header.record_offset))?;
+        
+        let mut records = Vec::with_capacity(header.record_count as usize);
+        
+        for i in 0..header.record_count {
+            // Read record header only
+            let mut record_header = [0u8; 16];
+            reader.read_exact(&mut record_header)?;
+            
+            let struct_id = u32::from_le_bytes([
+                record_header[0], record_header[1], record_header[2], record_header[3]
+            ]);
+            
+            let name_offset = u32::from_le_bytes([
+                record_header[4], record_header[5], record_header[6], record_header[7]
+            ]);
+            
+            let guid_lo = u32::from_le_bytes([
+                record_header[8], record_header[9], record_header[10], record_header[11]
+            ]);
+            
+            let guid_hi = u32::from_le_bytes([
+                record_header[12], record_header[13], record_header[14], record_header[15]
+            ]);
+            
+            let name = strings.get_by_offset(name_offset)
+                .cloned()
+                .unwrap_or_default();
+            
+            let guid = ((guid_hi as u64) << 32) | (guid_lo as u64);
+            
+            // Store current position for lazy loading later
+            let data_offset = reader.stream_position()?;
+            
+            records.push(LazyRecord::new(
+                i,
+                struct_id,
+                name,
+                guid,
+                data_offset,
+            ));
+        }
+        
+        Ok(records)
     }
     
     /// Parse records

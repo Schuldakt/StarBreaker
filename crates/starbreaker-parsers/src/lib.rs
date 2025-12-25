@@ -32,6 +32,7 @@ pub mod traits;
 pub mod registry;
 pub mod p4k;
 pub mod dcb;
+pub mod cgf;
 
 // Re-export main types
 pub use traits::{
@@ -46,11 +47,11 @@ pub use registry::{
 };
 
 pub use p4k::{P4kParser, P4kArchive, P4kEntry, P4kEntryInfo, P4kCompression, CompressionMethod};
-pub use dcb::{DcbParser, DataCore, DataCoreHeader, Record, RecordValue, RecordValue, RecordRef, StructDef, PropertyDef, DataType};
+pub use dcb::{DcbParser, DataCore, DataCoreHeader, Record, RecordValue, RecordRef, StructDef, PropertyDef, DataType};
+pub use cgf::{CgfParser, CgfModel, Mesh, Vertex, Face, Skeleton, Bone};
 
 /// Initialize the global parser registry with all built-in parsers
 pub fn init_registry() {
-    use std::sync::Arc;
 
     // Register P4K parser
     let _ = GLOBAL_REGISTRY.register(

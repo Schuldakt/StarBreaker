@@ -2,7 +2,12 @@
 //! Record types and values for DataCore Binary format
 
 use std::collections::HashMap;
+use std::sync::Arc;
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
+
+use super::{StructDef, PropertyDef, StringTable};
+use crate::traits::ParseResult;
 
 /// A single data record from the DCB file
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -277,6 +282,101 @@ impl From<&Record> for RecordInfo {
     }
 }
 
+/// Lazy-loaded record that defers parsing values until accessed
+#[derive(Debug, Clone)]
+pub struct LazyRecord {
+    /// Record metadata (always loaded)
+    pub id: u32,
+    pub struct_id: u32,
+    pub name: String,
+    pub guid: u64,
+    
+    /// File position where record property data starts
+    pub(crate) file_offset: u64,
+    
+    /// Cached values (loaded on first access)
+    values: Arc<RwLock<Option<HashMap<String, RecordValue>>>>,
+}
+
+impl LazyRecord {
+    /// Create a new lazy record
+    pub fn new(
+        id: u32,
+        struct_id: u32,
+        name: String,
+        guid: u64,
+        file_offset: u64,
+    ) -> Self {
+        Self {
+            id,
+            struct_id,
+            name,
+            guid,
+            file_offset,
+            values: Arc::new(RwLock::new(None)),
+        }
+    }
+    
+    /// Check if values are loaded
+    pub fn is_loaded(&self) -> bool {
+        self.values.read().is_some()
+    }
+    
+    /// Load values from file if not already loaded
+    /// This should be called by the DataCore when values are needed
+    pub(crate) fn ensure_loaded<F>(
+        &self,
+        loader: F,
+    ) -> ParseResult<()>
+    where
+        F: FnOnce(u64) -> ParseResult<HashMap<String, RecordValue>>,
+    {
+        let mut values = self.values.write();
+        if values.is_none() {
+            *values = Some(loader(self.file_offset)?);
+        }
+        Ok(())
+    }
+    
+    /// Get a value by property name (loads values if needed)
+    pub fn get<F>(&self, name: &str, loader: F) -> ParseResult<Option<RecordValue>>
+    where
+        F: FnOnce(u64) -> ParseResult<HashMap<String, RecordValue>>,
+    {
+        self.ensure_loaded(loader)?;
+        Ok(self.values.read().as_ref().and_then(|v| v.get(name).cloned()))
+    }
+    
+    /// Get all values (loads if needed)
+    pub fn values<F>(&self, loader: F) -> ParseResult<HashMap<String, RecordValue>>
+    where
+        F: FnOnce(u64) -> ParseResult<HashMap<String, RecordValue>>,
+    {
+        self.ensure_loaded(loader)?;
+        Ok(self.values.read().as_ref().unwrap().clone())
+    }
+    
+    /// Convert to a fully loaded Record
+    pub fn to_record<F>(&self, loader: F) -> ParseResult<Record>
+    where
+        F: FnOnce(u64) -> ParseResult<HashMap<String, RecordValue>>,
+    {
+        let values = self.values(loader)?;
+        Ok(Record {
+            id: self.id,
+            struct_id: self.struct_id,
+            name: self.name.clone(),
+            guid: self.guid,
+            values,
+        })
+    }
+    
+    /// Unload values to free memory
+    pub fn unload(&self) {
+        *self.values.write() = None;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -341,5 +441,38 @@ mod tests {
         
         let valid_ref = RecordRef { record_id: 123, struct_id: 456 };
         assert!(!valid_ref.is_null());
+    }
+    
+    #[test]
+    fn test_lazy_record_creation() {
+        let lazy = LazyRecord::new(
+            1,
+            10,
+            "Test".to_string(),
+            0x123,
+            100,
+        );
+        
+        assert_eq!(lazy.id, 1);
+        assert_eq!(lazy.struct_id, 10);
+        assert_eq!(lazy.name, "Test");
+        assert_eq!(lazy.guid, 0x123);
+        assert!(!lazy.is_loaded());
+    }
+    
+    #[test]
+    fn test_lazy_record_unload() {
+        let lazy = LazyRecord::new(1, 10, "Test".to_string(), 0x123, 100);
+        
+        // Simulate loading
+        let mut test_values = HashMap::new();
+        test_values.insert("test".to_string(), RecordValue::Int32(42));
+        *lazy.values.write() = Some(test_values);
+        
+        assert!(lazy.is_loaded());
+        
+        // Unload
+        lazy.unload();
+        assert!(!lazy.is_loaded());
     }
 }

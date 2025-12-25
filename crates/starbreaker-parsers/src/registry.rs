@@ -300,7 +300,7 @@ pub static GLOBAL_REGISTRY: Lazy<ParserRegistry> = Lazy::new(|| {
 });
 
 /// Register all built-in parsers
-fn register_builtin_parsers(registry: &ParserRegistry) {
+fn register_builtin_parsers(_registry: &ParserRegistry) {
     // These will be implemented in their respective modules
     // and registered here during initialization
 

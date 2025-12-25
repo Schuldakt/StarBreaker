@@ -289,7 +289,7 @@ pub trait RandomAccessParser: Parser {
     /// Extract multiple entries efficiently
     fn extract_entries<R: Read + Seek>(
         &self,
-        reader: R,
+        _reader: R,
         entry_ids: &[Self::EntryId],
     ) -> ParseResult<Vec<(Self::EntryId, Vec<u8>)>> {
         // Default implementation extracts one at a time

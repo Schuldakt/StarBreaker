@@ -166,6 +166,9 @@ mod tests {
         assert_eq!(entry.extension(), Some("1"));
 
         let entry = make_test_entry("model.cgf");
+        assert_eq!(entry.extension(), Some("cgf"));
+
+        let entry = make_test_entry("noextension");
         assert_eq!(entry.extension(), None);
 
         let entry = make_test_entry("Data/");
