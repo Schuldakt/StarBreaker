@@ -50,8 +50,8 @@ impl StarBreakerApp {
             state: state.clone(),
             theme: Theme::dark(),
             file_browser: FileBrowserPanel::new(state.clone()),
-            preview: PreviewPanel::new(sta.clone()),
-            export_dialog: ExportDialog::new(statete.clone()),
+            preview: PreviewPanel::new(state.clone()),
+            export_dialog: ExportDialog::new(state.clone()),
             status: StatusPanel::new(state.clone()),
             inspector: InspectorPanel::new(state.clone()),
             search: SearchPanel::new(state),
@@ -97,14 +97,14 @@ impl eframe::App for StarBreakerApp {
                     }
                     
                     ui.separator();
-                    Export...").clicked() {
+                    
+                    if ui.button("Export...").clicked() {
                         self.export_dialog.open();
                         ui.close_menu();
                     }
                     
                     ui.separator();
                     
-                    if ui.button("
                     if ui.button("Quit").clicked() {
                         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                     }

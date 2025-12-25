@@ -53,7 +53,7 @@ impl SearchPanel {
         // Filter options
         ui.horizontal(|ui| {
             ui.label("Type:");
-            egui::ComboBox::from_id_source("search_filter")
+            egui::ComboBox::new("search_filter", "")
                 .selected_text(&self.filter_type)
                 .show_ui(ui, |ui| {
                     ui.selectable_value(&mut self.filter_type, "All".to_string(), "All");

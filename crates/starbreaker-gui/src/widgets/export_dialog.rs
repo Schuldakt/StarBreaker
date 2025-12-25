@@ -71,6 +71,8 @@ impl ExportDialog {
             return;
         }
         
+        let mut should_export = false;
+        
         egui::Window::new("Export File")
             .collapsible(false)
             .resizable(false)
@@ -84,7 +86,7 @@ impl ExportDialog {
                     // Format selection
                     ui.horizontal(|ui| {
                         ui.label("Format:");
-                        egui::ComboBox::from_id_source("export_format")
+                        egui::ComboBox::new("export_format", "")
                             .selected_text(self.selected_format.name())
                             .show_ui(ui, |ui| {
                                 // Determine appropriate formats based on file type
@@ -140,7 +142,7 @@ impl ExportDialog {
                     // Action buttons
                     ui.horizontal(|ui| {
                         if ui.button("Export").clicked() {
-                            self.perform_export();
+                            should_export = true;
                             self.show = false;
                         }
                         
@@ -156,9 +158,14 @@ impl ExportDialog {
                     }
                 }
             });
+        
+        // Perform export after window is closed to avoid borrow conflicts
+        if should_export {
+            self.perform_export();
+        }
     }
     
-    fn perform_export(&self) {
+    fn perform_export(&mut self) {
         let mut state = self.state.write();
         state.set_status(format!("Exporting to {}...", self.output_path.display()));
         
