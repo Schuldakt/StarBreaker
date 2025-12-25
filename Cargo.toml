@@ -3,4 +3,23 @@ name = "StarBreaker"
 version = "0.1.0"
 edition = "2024"
 
+[workspace]
+resolver = "3"
+members = [
+    "crates/starbreaker-core",
+    "crates/starbreaker-datacore",
+    "crates/starbreaker-export",
+    "crates/starbreaker-gui",
+    "crates/starbreaker-parsers",
+    "crates/starbreaker-render",
+    "crates/starbreaker-vfs"
+    ]
+
 [dependencies]
+starbreaker-core = { path = "crates/starbreaker-core" }
+starbreaker-datacore = { path = "crates/starbreaker-datacore" }
+starbreaker-export = { path = "crates/starbreaker-export" }
+starbreaker-gui = { path = "crates/starbreaker-gui" }
+starbreaker-parsers = { path = "crates/starbreaker-parsers" }
+starbreaker-render = { path = "crates/starbreaker-render" }
+starbreaker-vfs = { path = "crates/starbreaker-vfs" }
