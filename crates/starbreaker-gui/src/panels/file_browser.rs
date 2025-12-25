@@ -89,8 +89,35 @@ impl FileBrowserPanel {
                         let mut state = state.write();
                         state.select_file(path.to_string());
                         state.set_status(format!("Selected: {}", path));
-                    });
-                });
+                    });                    
+                    // Context menu
+                    ui.interact(ui.max_rect(), ui.id().with("tree_context"), egui::Sense::click())
+                        .context_menu(|ui| {
+                            if let Some(selected) = state.read().selected_file.clone() {
+                                ui.label(format!("Actions for: {}", 
+                                    selected.rsplit('/').next().unwrap_or(&selected)));
+                                ui.separator();
+                                
+                                if ui.button("📋 Copy Path").clicked() {
+                                    ui.output_mut(|o| o.copied_text = selected.clone());
+                                    ui.close_menu();
+                                }
+                                
+                                if ui.button("💾 Extract...").clicked() {
+                                    let mut state_write = state.write();
+                                    state_write.set_status("Extract not yet implemented");
+                                    ui.close_menu();
+                                }
+                                
+                                if ui.button("📤 Export...").clicked() {
+                                    let mut state_write = state.write();
+                                    state_write.set_status("Export not yet implemented");
+                                    ui.close_menu();
+                                }
+                            } else {
+                                ui.label("No file selected");
+                            }
+                        });                });
         } else {
             ui.vertical_centered(|ui| {
                 ui.add_space(100.0);

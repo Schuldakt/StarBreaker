@@ -278,16 +278,16 @@ This document tracks all development tasks, organized by priority and component.
 - [x] ✅ Tree view widget
 - [x] ✅ Lazy loading for large directories
 - [x] ✅ File type icons
-- [ ] 📋 Context menu (extract, export, copy path)
+- [x] ✅ Context menu (extract, export, copy path)
 - [ ] 📋 Drag and drop support
 - [ ] 📋 Breadcrumb navigation
 
 ### Preview Panel
 
-- [ ] 📋 Text file viewer
-- [ ] 📋 Hex viewer for binary
+- [x] ✅ Text file viewer
+- [x] ✅ Hex viewer for binary
 - [ ] 📋 JSON/XML syntax highlighting
-- [ ] 📋 Image viewer (DDS, PNG, etc.)
+- [x] ✅ Image viewer (DDS, PNG, etc.)
 
 ### 3D Preview (`starbreaker-render/`)
 
