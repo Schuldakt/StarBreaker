@@ -227,7 +227,13 @@ This document tracks all development tasks, organized by priority and component.
 
 ### glTF Exporter (`starbreaker-export/src/gltf/`)
 
-- [ ] 📋 glTF 2.0 JSON structure
+- [x] ✅ glTF 2.0 JSON structure
+- [x] ✅ Binary buffer generation (.bin)
+- [x] ✅ GLB single-file export
+- [x] ✅ Mesh primitives
+- [x] ✅ PBR materials
+- [ ] 📋 Skeleton/skin export
+- [ ] 📋 Draco compression (optional)
 - [ ] 📋 Binary buffer generation (.bin)
 - [ ] 📋 GLB single-file export
 - [ ] 📋 Mesh primitives
