@@ -268,7 +268,7 @@ impl DcbParser {
     fn parse_binxml_header<R: Read + Seek>(
         &self,
         reader: &mut R,
-        initial_data: &[u8; 36]
+        _initial_data: &[u8; 36]
     ) -> ParseResult<DataCoreHeader> {
         // Binary XML has a different structure
         // Re-read with correct offsets
@@ -316,7 +316,7 @@ impl DcbParser {
         }
         
         // Read string data
-        let data_start = reader.stream_position()?;
+        let _data_start = reader.stream_position()?;
         let mut string_data = Vec::new();
         reader.read_to_end(&mut string_data)?;
         
@@ -782,7 +782,7 @@ impl Parser for DcbParser {
     fn parse_with_options<R: Read + Seek>(
         &self,
         mut reader: R,
-        options: &ParseOptions,
+        _options: &ParseOptions,
         progress: Option<ProgressCallback>,
     ) -> ParseResult<Self::Output> {
         // Report start
@@ -863,7 +863,7 @@ impl Parser for DcbParser {
 }
 
 /// String table for DCB file
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StringTable {
     /// All strings indexed by ID
     pub strings: Vec<String>,

@@ -12,3 +12,5 @@ pub mod json;
 pub mod textures;
 
 pub use gltf::{GltfExporter, GltfExportOptions};
+pub use json::{JsonExporter, JsonExportOptions};
+pub use textures::{TextureConverter, TextureConvertOptions, ImageFormat};

@@ -11,7 +11,7 @@ use std::sync::{Arc, RwLock};
 
 use once_cell::sync::Lazy;
 
-use crate::traits::{ParseError, ParseResult, Parser};
+use crate::traits::Parser;
 
 /// Type-erased parser wrapper for storage in the registry
 pub trait AnyParser: Send + Sync {
@@ -396,7 +396,7 @@ impl Default for ParserRegistrationBuilder {
 mod tests {
     use super::*;
     use std::io::{Read, Seek};
-    use crate::traits::{ParseOptions, ProgressCallback};
+    use crate::traits::{ParseOptions, ProgressCallback, ParseResult};
 
     // Mock parser for testing
     struct MockParser;

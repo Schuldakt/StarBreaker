@@ -242,6 +242,8 @@ pub enum DataStreamType {
     VertsUV = 13,
     PS3EdgeData = 14,
     ExtraBonesMapping = 15,
+    /// Non-standard naming preserved for compatibility
+    #[allow(non_camel_case_types)]
     P3S_C = 16,
     Unknown(u32),
 }

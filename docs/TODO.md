@@ -234,21 +234,24 @@ This document tracks all development tasks, organized by priority and component.
 - [x] ✅ PBR materials
 - [ ] 📋 Skeleton/skin export
 - [ ] 📋 Draco compression (optional)
-- [ ] 📋 Binary buffer generation (.bin)
-- [ ] 📋 GLB single-file export
-- [ ] 📋 Mesh primitives
-- [ ] 📋 PBR materials
-- [ ] 📋 Skeleton/skin export
-- [ ] 📋 Draco compression (optional)
+
+### JSON Exporter (`starbreaker-export/src/json/`)
+
+- [x] ✅ DCB DataCore export
+- [x] ✅ Record export with property values
+- [x] ✅ CGF mesh metadata export
+- [x] ✅ P4K archive index export
+- [x] ✅ Pretty-print and compact modes
 
 ### Texture Converter (`starbreaker-export/src/textures/`)
 
-- [ ] 📋 🟠 DDS to PNG conversion
-- [ ] 📋 DDS to TGA conversion
-- [ ] 📋 BC1-BC7 decompression
-- [ ] 📋 Normal map handling
-- [ ] 📋 Mipmap extraction
-- [ ] 📋 Batch conversion
+- [x] ✅ DDS to PNG conversion
+- [x] ✅ DDS to TGA conversion
+- [x] ✅ BC1-BC5 decompression
+- [ ] 📋 BC6H/BC7 decompression (texpresso limitation)
+- [x] ✅ Normal map handling (DX to OpenGL conversion)
+- [x] ✅ Mipmap extraction
+- [x] ✅ Batch conversion
 
 ### Data Exporters (`starbreaker-export/src/json/`)
 

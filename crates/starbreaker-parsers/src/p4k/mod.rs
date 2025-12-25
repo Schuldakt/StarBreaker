@@ -39,8 +39,7 @@ pub use archive::P4kArchive;
 pub use entry::{P4kEntry, P4kEntryInfo};
 pub use compression::P4kCompression;
 
-use std::io::{Read, Seek, SeekFrom, BufReader};
-use std::path::Path;
+use std::io::{Read, Seek, SeekFrom};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -76,6 +75,12 @@ pub enum CompressionMethod {
     Zstd = 93,
     Lz4 = 99, // Custom for Star Citizen
     Unknown(u16),
+}
+
+impl Default for CompressionMethod {
+    fn default() -> Self {
+        CompressionMethod::Store
+    }
 }
 
 impl From<u16> for CompressionMethod {
@@ -260,8 +265,8 @@ impl P4kParser {
             });
         }
 
-        let version_made        = u16::from_le_bytes([header[4], header[5]]);
-        let version_needed      = u16::from_le_bytes([header[6], header[7]]);
+        let _version_made        = u16::from_le_bytes([header[4], header[5]]);
+        let _version_needed      = u16::from_le_bytes([header[6], header[7]]);
         let flags               = u16::from_le_bytes([header[8], header[9]]);
         let compression         = CompressionMethod::from(u16::from_le_bytes([header[10], header[11]]));
         let mod_time            = u16::from_le_bytes([header[12], header[13]]);
@@ -272,9 +277,9 @@ impl P4kParser {
         let name_length       = u16::from_le_bytes([header[28], header[29]]) as usize;
         let extra_length      = u16::from_le_bytes([header[30], header[31]]) as usize;
         let comment_length    = u16::from_le_bytes([header[32], header[33]]) as usize;
-        let disk_start          = u16::from_le_bytes([header[34], header[35]]);
-        let internal_attrs      = u16::from_le_bytes([header[36], header[37]]);
-        let external_attrs      = u32::from_le_bytes([header[38], header[39], header[40], header[41]]);
+        let _disk_start          = u16::from_le_bytes([header[34], header[35]]);
+        let _internal_attrs      = u16::from_le_bytes([header[36], header[37]]);
+        let _external_attrs      = u32::from_le_bytes([header[38], header[39], header[40], header[41]]);
         let local_header_offset = u32::from_le_bytes([header[42], header[43], header[44], header[45]]);
 
         // Read filename
@@ -293,6 +298,7 @@ impl P4kParser {
         // Skip comment
         reader.seek(SeekFrom::Current(comment_length as i64))?;
 
+        let is_directory = path.ends_with('/');
         Ok(P4kEntry {
             path,
             compression,
@@ -304,7 +310,7 @@ impl P4kParser {
             mod_time,
             mod_date,
             is_encrypted: flags & 0x01 != 0,
-            is_directory: path.ends_with('/'),
+            is_directory,
         })
     }
 

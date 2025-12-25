@@ -6,7 +6,6 @@ use std::sync::Arc;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
-use super::{StructDef, PropertyDef, StringTable};
 use crate::traits::ParseResult;
 
 /// A single data record from the DCB file
