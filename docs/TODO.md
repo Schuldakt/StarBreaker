@@ -302,17 +302,17 @@ This document tracks all development tasks, organized by priority and component.
 
 ### Inspector Panel
 
-- [ ] 📋 Property grid widget
-- [ ] 📋 DCB record display
-- [ ] 📋 Mesh statistics
-- [ ] 📋 Material properties
+- [x] ✅ Property grid widget
+- [x] ✅ DCB record display
+- [x] ✅ Mesh statistics
+- [x] ✅ Material properties
 - [ ] 📋 Linked record navigation
 
 ### Search
 
-- [ ] 📋 Global search bar
-- [ ] 📋 Search results list
-- [ ] 📋 Filter by type
+- [x] ✅ Global search bar
+- [x] ✅ Search results list
+- [x] ✅ Filter by type
 - [ ] 📋 Recent searches
 
 ### Export Dialog

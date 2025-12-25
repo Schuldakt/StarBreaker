@@ -2,7 +2,7 @@
 
 use crate::state::AppState;
 use crate::theme::Theme;
-use crate::panels::{FileBrowserPanel, PreviewPanel, StatusPanel};
+use crate::panels::{FileBrowserPanel, PreviewPanel, StatusPanel, InspectorPanel, SearchPanel};
 use eframe::egui;
 use std::sync::Arc;
 use parking_lot::RwLock;
@@ -24,6 +24,12 @@ pub struct StarBreakerApp {
     
     /// Status bar panel
     status: StatusPanel,
+    
+    /// Inspector panel
+    inspector: InspectorPanel,
+    
+    /// Search panel
+    search: SearchPanel,
 }
 
 impl StarBreakerApp {
@@ -41,7 +47,9 @@ impl StarBreakerApp {
             theme: Theme::dark(),
             file_browser: FileBrowserPanel::new(state.clone()),
             preview: PreviewPanel::new(state.clone()),
-            status: StatusPanel::new(state),
+            status: StatusPanel::new(state.clone()),
+            inspector: InspectorPanel::new(state.clone()),
+            search: SearchPanel::new(state),
         }
     }
     
@@ -50,7 +58,12 @@ impl StarBreakerApp {
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::O)) {
             // Open P4K file
             self.file_browser.open_archive_dialog();
+        }F)) {
+            // Toggle search
+            self.search.toggle();
         }
+        
+        if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::
         
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Q)) {
             // Quit application
@@ -108,8 +121,22 @@ impl eframe::App for StarBreakerApp {
         });
         
         // File browser (left panel)
-        egui::SidePanel::left("file_browser")
-            .default_width(300.0)
+        eguInspector (right panel)
+        egui::SidePanel::right("inspector")
+            .default_width(250.0)
+            .resizable(true)
+            .show(ctx, |ui| {
+                self.inspector.show(ui);
+            });
+        
+        // Preview panel (center)
+        egui::CentralPanel::default().show(ctx, |ui| {
+            // Search bar if enabled
+            self.search.show(ui);
+            if self.search.show_search {
+                ui.separator();
+            }
+            
             .resizable(true)
             .show(ctx, |ui| {
                 self.file_browser.show(ui);
