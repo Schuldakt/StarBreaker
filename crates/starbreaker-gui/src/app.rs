@@ -2,7 +2,7 @@
 
 use crate::state::AppState;
 use crate::theme::Theme;
-use crate::panels::{FileBrowserPanel, PreviewPanel, StatusPanel, InspectorPanel, SearchPanel};
+use crate::panels::{FileBrowserPanel, PreviewPanel, StatusPanel, InspectorPanel, SearchPanel, SettingsPanel};
 use crate::widgets::ExportDialog;
 use eframe::egui;
 use std::sync::Arc;
@@ -32,6 +32,9 @@ pub struct StarBreakerApp {
     /// Search panel
     search: SearchPanel,
     
+    /// Settings panel
+    settings: SettingsPanel,
+    
     /// Export dialog
     export_dialog: ExportDialog,
 }
@@ -54,7 +57,8 @@ impl StarBreakerApp {
             export_dialog: ExportDialog::new(state.clone()),
             status: StatusPanel::new(state.clone()),
             inspector: InspectorPanel::new(state.clone()),
-            search: SearchPanel::new(state),
+            search: SearchPanel::new(state.clone()),
+            settings: SettingsPanel::new(state),
         }
     }
     
@@ -73,6 +77,11 @@ impl StarBreakerApp {
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::E)) {
             // Export selected file
             self.export_dialog.open();
+        }
+        
+        if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Comma)) {
+            // Open settings
+            self.settings.open();
         }
         
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Q)) {
@@ -121,6 +130,13 @@ impl eframe::App for StarBreakerApp {
                         ctx.set_visuals(style);
                         ui.close_menu();
                     }
+                    
+                    ui.separator();
+                    
+                    if ui.button("Settings...").clicked() {
+                        self.settings.open();
+                        ui.close_menu();
+                    }
                 });
                 
                 ui.menu_button("Help", |ui| {
@@ -166,5 +182,8 @@ impl eframe::App for StarBreakerApp {
         
         // Show export dialog if open
         self.export_dialog.show(ctx);
+        
+        // Show settings dialog if open
+        self.settings.show(ctx, &mut self.theme);
     }
 }

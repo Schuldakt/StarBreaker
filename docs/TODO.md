@@ -325,10 +325,10 @@ This document tracks all development tasks, organized by priority and component.
 
 ### Settings
 
-- [ ] 📋 Game path configuration
-- [ ] 📋 Default export settings
-- [ ] 📋 Theme selection
-- [ ] 📋 Keyboard shortcut customization
+- [x] ✅ Game path configuration
+- [x] ✅ Default export settings
+- [x] ✅ Theme selection
+- [x] ✅ Keyboard shortcut customization
 - [ ] 📋 Cache management
 
 ---
