@@ -331,6 +331,14 @@ This document tracks all development tasks, organized by priority and component.
 - [x] ✅ Keyboard shortcut customization
 - [ ] 📋 Cache management
 
+### Debug Console
+
+- [x] ✅ Toggleable debug console panel
+- [x] ✅ Log message capture
+- [x] ✅ Error display
+- [ ] 📋 Command input
+- [x] ✅ Copy to clipboard
+
 ---
 
 ## Phase 6: Polish & Release (Weeks 13-14)

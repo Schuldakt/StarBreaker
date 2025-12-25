@@ -2,7 +2,7 @@
 
 use crate::state::AppState;
 use crate::theme::Theme;
-use crate::panels::{FileBrowserPanel, PreviewPanel, StatusPanel, InspectorPanel, SearchPanel, SettingsPanel};
+use crate::panels::{FileBrowserPanel, PreviewPanel, StatusPanel, InspectorPanel, SearchPanel, SettingsPanel, DebugConsolePanel};
 use crate::widgets::ExportDialog;
 use eframe::egui;
 use std::sync::Arc;
@@ -35,6 +35,9 @@ pub struct StarBreakerApp {
     /// Settings panel
     settings: SettingsPanel,
     
+    /// Debug console panel
+    debug_console: DebugConsolePanel,
+    
     /// Export dialog
     export_dialog: ExportDialog,
 }
@@ -58,7 +61,8 @@ impl StarBreakerApp {
             status: StatusPanel::new(state.clone()),
             inspector: InspectorPanel::new(state.clone()),
             search: SearchPanel::new(state.clone()),
-            settings: SettingsPanel::new(state),
+            settings: SettingsPanel::new(state.clone()),
+            debug_console: DebugConsolePanel::new(state),
         }
     }
     
@@ -66,6 +70,7 @@ impl StarBreakerApp {
     fn handle_shortcuts(&mut self, ctx: &egui::Context) {
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::O)) {
             // Open P4K file
+            self.debug_console.info("Opening file dialog...");
             self.file_browser.open_archive_dialog();
         }
         
@@ -82,6 +87,11 @@ impl StarBreakerApp {
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Comma)) {
             // Open settings
             self.settings.open();
+        }
+        
+        if ctx.input(|i| i.key_pressed(egui::Key::Backtick)) {
+            // Toggle debug console
+            self.debug_console.toggle();
         }
         
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Q)) {
@@ -128,6 +138,13 @@ impl eframe::App for StarBreakerApp {
                             egui::Visuals::light()
                         };
                         ctx.set_visuals(style);
+                        ui.close_menu();
+                    }
+                    
+                    ui.separator();
+                    
+                    if ui.button("Debug Console").clicked() {
+                        self.debug_console.toggle();
                         ui.close_menu();
                     }
                     
@@ -185,5 +202,8 @@ impl eframe::App for StarBreakerApp {
         
         // Show settings dialog if open
         self.settings.show(ctx, &mut self.theme);
+        
+        // Show debug console if open
+        self.debug_console.show(ctx);
     }
 }

@@ -1,12 +1,17 @@
 //! Application state management
 
 use starbreaker_vfs::VfsTree;
+use starbreaker_parsers::P4kArchive;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 /// Application state
 pub struct AppState {
     /// Currently opened VFS tree
     pub vfs: Option<VfsTree>,
+    
+    /// Currently opened P4K archive (for direct access)
+    pub archive: Option<Arc<P4kArchive>>,
     
     /// Currently selected file path
     pub selected_file: Option<String>,
@@ -23,6 +28,7 @@ impl AppState {
     pub fn new() -> Self {
         Self {
             vfs: None,
+            archive: None,
             selected_file: None,
             last_p4k_path: None,
             status_message: "Ready".to_string(),
@@ -31,16 +37,32 @@ impl AppState {
     
     /// Open a P4K archive
     pub fn open_archive(&mut self, path: PathBuf) -> anyhow::Result<()> {
+        use starbreaker_parsers::traits::Parser;
+        use starbreaker_parsers::P4kParser;
         use starbreaker_vfs::mount::P4kMount;
-        use std::sync::Arc;
         
+        // Parse the P4K archive
+        eprintln!("[DEBUG] Loading P4K: {}", path.display());
+        self.status_message = format!("Loading {}...", path.display());
+        let parser = P4kParser::new();
+        
+        eprintln!("[DEBUG] Parsing archive...");
+        let archive = parser.parse_file(&path)?;
+        eprintln!("[INFO] Parsed {} entries", archive.entries.len());
+        
+        let archive = Arc::new(archive);
+        
+        // Create VFS mount
         let vfs = VfsTree::new();
         let mount = P4kMount::new(0, "game", &path);
         vfs.add_mount(Arc::new(mount));
         
         self.vfs = Some(vfs);
+        self.archive = Some(archive.clone());
         self.last_p4k_path = Some(path.clone());
-        self.status_message = format!("Opened: {}", path.display());
+        self.status_message = format!("Opened: {} ({} files)", 
+            path.display(), 
+            archive.entries.len());
         
         Ok(())
     }

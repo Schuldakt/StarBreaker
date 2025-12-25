@@ -29,13 +29,19 @@ impl FileBrowserPanel {
             .add_filter("P4K Archive", &["p4k"])
             .pick_file()
         {
+            let path_str = path.display().to_string();
             let mut state = self.state.write();
             if let Err(e) = state.open_archive(path) {
-                state.set_status(format!("Error opening archive: {}", e));
+                let error_msg = format!("Error opening archive: {}", e);
+                state.set_status(error_msg.clone());
+                eprintln!("[ERROR] {}", error_msg);
             } else {
+                eprintln!("[INFO] Successfully opened archive: {}", path_str);
                 // Build tree from VFS
                 drop(state); // Release write lock
                 self.rebuild_tree();
+                eprintln!("[DEBUG] Tree rebuilt with {} entries", 
+                    self.tree_root.as_ref().map(|t| t.children.len()).unwrap_or(0));
             }
         }
     }
@@ -44,23 +50,31 @@ impl FileBrowserPanel {
     fn rebuild_tree(&mut self) {
         let state = self.state.read();
         
-        if let Some(_vfs) = &state.vfs {
-            // For now, create a simple tree structure
-            // TODO: Actually enumerate VFS contents when mount points support it
-            let mut root = TreeNode::new("Archive", "/", true);
+        if let Some(archive) = &state.archive {
+            // Build tree from P4K archive
+            let dir_tree = archive.build_tree();
             
-            // Placeholder structure
-            let mut data_node = TreeNode::new("Data", "/Data", true);
-            data_node.add_child(TreeNode::new("Objects", "/Data/Objects", true));
-            data_node.add_child(TreeNode::new("Textures", "/Data/Textures", true));
+            // Convert P4K DirectoryNode to our TreeNode
+            fn convert_node(name: &str, path: &str, dir_node: &starbreaker_parsers::p4k::DirectoryNode) -> TreeNode {
+                let mut node = TreeNode::new(name, path, !dir_node.is_file);
+                
+                for child_name in dir_node.sorted_children() {
+                    if let Some(child_dir_node) = dir_node.children.get(child_name) {
+                        let child_path = if path == "/" || path.is_empty() {
+                            format!("/{}", child_name)
+                        } else {
+                            format!("{}/{}", path, child_name)
+                        };
+                        
+                        let child_tree_node = convert_node(child_name, &child_path, child_dir_node);
+                        node.add_child(child_tree_node);
+                    }
+                }
+                
+                node
+            }
             
-            let mut libs_node = TreeNode::new("Libs", "/Libs", true);
-            libs_node.add_child(TreeNode::new("Materials", "/Libs/Materials", true));
-            
-            root.add_child(data_node);
-            root.add_child(libs_node);
-            root.sort_children();
-            
+            let root = convert_node("Archive", "/", &dir_tree);
             self.tree_root = Some(root);
         } else {
             self.tree_root = None;

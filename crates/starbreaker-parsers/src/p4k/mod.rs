@@ -36,6 +36,7 @@ mod entry;
 mod compression;
 
 pub use archive::P4kArchive;
+pub use archive::DirectoryNode;
 pub use entry::{P4kEntry, P4kEntryInfo};
 pub use compression::P4kCompression;
 
