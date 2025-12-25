@@ -267,17 +267,17 @@ This document tracks all development tasks, organized by priority and component.
 
 ### Framework Setup (`starbreaker-gui/`)
 
-- [ ] 📋 Set up egui + eframe
-- [ ] 📋 Application state management
-- [ ] 📋 Theme configuration (dark/light)
-- [ ] 📋 Keyboard shortcuts
-- [ ] 📋 Window management
+- [x] ✅ Set up egui + eframe
+- [x] ✅ Application state management
+- [x] ✅ Theme configuration (dark/light)
+- [x] ✅ Keyboard shortcuts
+- [x] ✅ Window management
 
 ### File Browser Panel
 
-- [ ] 📋 Tree view widget
-- [ ] 📋 Lazy loading for large directories
-- [ ] 📋 File type icons
+- [x] ✅ Tree view widget
+- [x] ✅ Lazy loading for large directories
+- [x] ✅ File type icons
 - [ ] 📋 Context menu (extract, export, copy path)
 - [ ] 📋 Drag and drop support
 - [ ] 📋 Breadcrumb navigation
