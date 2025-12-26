@@ -2,7 +2,15 @@
 //! P4K Archive container structure
 
 use std::collections::HashMap;
+use std::path::Path;
+use std::fs::File;
+use std::io::BufReader;
+
+use memmap2::Mmap;
+
 use super::entry::P4kEntry;
+
+use crate::ParseResult;
 
 /// Parsed P4K archive structure
 #[derive(Debug)]
@@ -284,6 +292,19 @@ impl ArchiveStatistics {
         exts.sort_by(|a, b| b.1.cmp(&a.1));
         exts.truncate(n);
         exts
+    }
+}
+
+pub enum P4kSource {
+    File(BufReader<File>),
+    Mapped(Mmap),
+}
+
+impl P4kArchive {
+    pub fn open_mapped(path: &Path) -> ParseResult<Self> {
+        let file = File::open(path)?;
+        let mmap = unsafe { Mmap::map(&file)? };
+        Self::from_source(P4kSource::Mapped(mmap))
     }
 }
 

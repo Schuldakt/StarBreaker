@@ -116,93 +116,85 @@ impl DebugConsolePanel {
         self.log(LogLevel::Info, "Console cleared");
     }
     
-    /// Show debug console UI
-    pub fn show(&mut self, ctx: &egui::Context) {
+    /// Show debug console UI as a bottom panel
+    pub fn show(&mut self, ui: &mut egui::Ui) {
         if !self.show {
             return;
         }
         
-        egui::Window::new("🐛 Debug Console")
-            .default_width(800.0)
-            .default_height(400.0)
-            .resizable(true)
-            .collapsible(false)
-            .show(ctx, |ui| {
-                // Toolbar
-                ui.horizontal(|ui| {
-                    if ui.button("Clear").clicked() {
-                        self.clear();
-                    }
-                    
-                    ui.separator();
-                    
-                    ui.label("Filter:");
-                    ui.radio_value(&mut self.filter_level, LogLevel::Debug, "Debug");
-                    ui.radio_value(&mut self.filter_level, LogLevel::Info, "Info");
-                    ui.radio_value(&mut self.filter_level, LogLevel::Warning, "Warning");
-                    ui.radio_value(&mut self.filter_level, LogLevel::Error, "Error");
-                    
-                    ui.separator();
-                    
-                    ui.checkbox(&mut self.auto_scroll, "Auto-scroll");
-                    
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.label(format!("{} messages", self.messages.len()));
-                    });
-                });
-                
-                ui.separator();
-                
-                // Log messages
-                let scroll_area = egui::ScrollArea::vertical()
-                    .auto_shrink([false, false])
-                    .stick_to_bottom(self.auto_scroll);
-                
-                scroll_area.show(ui, |ui| {
-                    ui.set_min_width(ui.available_width());
-                    
-                    for msg in &self.messages {
-                        // Filter by level
-                        if msg.level < self.filter_level {
-                            continue;
-                        }
-                        
-                        ui.horizontal(|ui| {
-                            ui.label(
-                                egui::RichText::new(&msg.timestamp)
-                                    .color(egui::Color32::DARK_GRAY)
-                                    .monospace()
-                            );
-                            
-                            ui.label(msg.level.icon());
-                            
-                            ui.label(
-                                egui::RichText::new(&msg.message)
-                                    .color(msg.level.color())
-                                    .monospace()
-                            );
-                        });
-                    }
-                });
-                
-                ui.separator();
-                
-                // Copy all button
-                ui.horizontal(|ui| {
-                    if ui.button("📋 Copy All").clicked() {
-                        let all_text: String = self.messages
-                            .iter()
-                            .map(|m| format!("[{}] {:?}: {}", m.timestamp, m.level, m.message))
-                            .collect::<Vec<_>>()
-                            .join("\n");
-                        ui.output_mut(|o| o.copied_text = all_text);
-                        self.info("Copied to clipboard");
-                    }
-                    
-                    if ui.button("Close").clicked() {
-                        self.close();
-                    }
-                });
+        ui.heading("🐛 Debug Console");
+        ui.separator();
+        
+        // Toolbar
+        ui.horizontal(|ui| {
+            if ui.button("Clear").clicked() {
+                self.clear();
+            }
+            
+            ui.separator();
+            
+            ui.label("Filter:");
+            ui.radio_value(&mut self.filter_level, LogLevel::Debug, "Debug");
+            ui.radio_value(&mut self.filter_level, LogLevel::Info, "Info");
+            ui.radio_value(&mut self.filter_level, LogLevel::Warning, "Warning");
+            ui.radio_value(&mut self.filter_level, LogLevel::Error, "Error");
+            
+            ui.separator();
+            
+            ui.checkbox(&mut self.auto_scroll, "Auto-scroll");
+            
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                ui.label(format!("{} messages", self.messages.len()));
             });
+        });
+        
+        ui.separator();
+        
+        // Log messages
+        let scroll_area = egui::ScrollArea::vertical()
+            .auto_shrink([false, false])
+            .stick_to_bottom(self.auto_scroll);
+        
+        scroll_area.show(ui, |ui| {
+            ui.set_min_width(ui.available_width());
+            
+            for msg in &self.messages {
+                // Filter by level
+                if msg.level < self.filter_level {
+                    continue;
+                }
+                
+                ui.horizontal(|ui| {
+                    ui.label(
+                        egui::RichText::new(&msg.timestamp)
+                            .color(egui::Color32::DARK_GRAY)
+                            .monospace()
+                    );
+                    
+                    ui.label(msg.level.icon());
+                    
+                    ui.label(
+                        egui::RichText::new(&msg.message)
+                            .color(msg.level.color())
+                            .monospace()
+                    );
+                });
+            }
+        });
+        
+        ui.separator();
+        
+        // Copy all button
+        ui.horizontal(|ui| {
+            if ui.button("📋 Copy All").clicked() {
+                let all_text: String = self.messages
+                    .iter()
+                    .map(|m| format!("[{}] {:?}: {}", m.timestamp, m.level, m.message))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                ui.output_mut(|o| o.copied_text = all_text);
+                self.info("Copied to clipboard");
+            }
+        });
     }
 }

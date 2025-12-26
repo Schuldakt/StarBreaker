@@ -1,7 +1,8 @@
 //! File browser panel
 
 use crate::state::AppState;
-use crate::widgets::{TreeView, TreeNode};
+use crate::widgets::{TreeNode, TreeView};
+use crate::panels::DebugConsolePanel;
 use eframe::egui;
 use std::sync::Arc;
 use parking_lot::RwLock;
@@ -24,25 +25,37 @@ impl FileBrowserPanel {
     }
     
     /// Open archive dialog
-    pub fn open_archive_dialog(&mut self) {
+    pub fn open_archive_dialog(&mut self, debug_console: &mut DebugConsolePanel) {
+        debug_console.info("File dialog opened");
+        
         if let Some(path) = rfd::FileDialog::new()
             .add_filter("P4K Archive", &["p4k"])
             .pick_file()
         {
             let path_str = path.display().to_string();
+            debug_console.info(format!("Selected file: {}", path_str));
+            
             let mut state = self.state.write();
             if let Err(e) = state.open_archive(path) {
                 let error_msg = format!("Error opening archive: {}", e);
                 state.set_status(error_msg.clone());
+                debug_console.error(&error_msg);
                 eprintln!("[ERROR] {}", error_msg);
             } else {
+                debug_console.info(format!("Successfully opened archive: {}", path_str));
                 eprintln!("[INFO] Successfully opened archive: {}", path_str);
                 // Build tree from VFS
                 drop(state); // Release write lock
+                
+                debug_console.debug("Building tree from archive...");
                 self.rebuild_tree();
-                eprintln!("[DEBUG] Tree rebuilt with {} entries", 
-                    self.tree_root.as_ref().map(|t| t.children.len()).unwrap_or(0));
+                
+                let entry_count = self.tree_root.as_ref().map(|t| t.children.len()).unwrap_or(0);
+                debug_console.info(format!("Tree rebuilt with {} root entries", entry_count));
+                eprintln!("[DEBUG] Tree rebuilt with {} entries", entry_count);
             }
+        } else {
+            debug_console.debug("File dialog cancelled");
         }
     }
     
@@ -76,19 +89,21 @@ impl FileBrowserPanel {
             
             let root = convert_node("Archive", "/", &dir_tree);
             self.tree_root = Some(root);
+            // Expand root by default
+            self.tree_view.set_expanded("/", true);
         } else {
             self.tree_root = None;
         }
     }
     
     /// Show file browser UI
-    pub fn show(&mut self, ui: &mut egui::Ui) {
+    pub fn show(&mut self, ui: &mut egui::Ui, debug_console: &mut DebugConsolePanel) {
         ui.heading("File Browser");
         ui.separator();
         
         // Open archive button
         if ui.button("📁 Open P4K Archive").clicked() {
-            self.open_archive_dialog();
+            self.open_archive_dialog(debug_console);
         }
         
         ui.separator();

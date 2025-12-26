@@ -52,6 +52,7 @@ use std::io::{Read, Seek, SeekFrom, BufReader};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::path::Path;
+use lasso::{ThreadedRodeo, Spur};
 
 use crate::traits::{
     Parser, ParseResult, ParseError,
@@ -320,11 +321,12 @@ impl DcbParser {
         let mut string_data = Vec::new();
         reader.read_to_end(&mut string_data)?;
         
-        // Build string map
-        let mut strings = Vec::with_capacity(count);
+        // Build string map using interner to deduplicate values
+        let interner = Arc::new(ThreadedRodeo::default());
+        let mut spurs = Vec::with_capacity(count);
         let mut by_offset = HashMap::new();
         
-        for (idx, &str_offset) in offsets.iter().enumerate() {
+        for &str_offset in offsets.iter() {
             let start = str_offset as usize;
             
             // Find null terminator
@@ -334,12 +336,13 @@ impl DcbParser {
                 .map(|p| start + p)
                 .unwrap_or(string_data.len());
             
-            let s = String::from_utf8_lossy(&string_data[start..end]).to_string();
-            by_offset.insert(str_offset, idx);
-            strings.push(s);
+            let s = String::from_utf8_lossy(&string_data[start..end]);
+            let spur = interner.get_or_intern(s.as_ref());
+            by_offset.insert(str_offset, spur);
+            spurs.push(spur);
         }
         
-        Ok(StringTable { strings, by_offset })
+        Ok(StringTable { interner, spurs, by_offset })
     }
     
     /// Parse structure definitions
@@ -383,7 +386,7 @@ impl DcbParser {
             ]);
             
             let name = strings.get_by_offset(name_offset)
-                .cloned()
+                .map(str::to_owned)
                 .unwrap_or_else(|| format!("Unknown_{}", i));
             
             structs.push(StructDef {
@@ -445,7 +448,7 @@ impl DcbParser {
             ]);
             
             let name = strings.get_by_offset(name_offset)
-                .cloned()
+                .map(str::to_owned)
                 .unwrap_or_else(|| format!("prop_{}", i));
             
             properties.push(PropertyDef {
@@ -493,7 +496,7 @@ impl DcbParser {
             ]);
             
             let name = strings.get_by_offset(name_offset)
-                .cloned()
+                .map(str::to_owned)
                 .unwrap_or_default();
             
             let guid = ((guid_hi as u64) << 32) | (guid_lo as u64);
@@ -690,7 +693,7 @@ impl DcbParser {
                 let mut buf = [0u8; 4];
                 reader.read_exact(&mut buf)?;
                 let offset = u32::from_le_bytes(buf);
-                let s = strings.get_by_offset(offset).cloned().unwrap_or_default();
+                let s = strings.get_by_offset(offset).map(str::to_owned).unwrap_or_default();
                 RecordValue::String(s)
             }
             
@@ -731,7 +734,7 @@ impl DcbParser {
                 let mut buf = [0u8; 4];
                 reader.read_exact(&mut buf)?;
                 let offset = u32::from_le_bytes(buf);
-                let s = strings.get_by_offset(offset).cloned().unwrap_or_default();
+                let s = strings.get_by_offset(offset).map(str::to_owned).unwrap_or_default();
                 RecordValue::LocaleString { key: offset.to_string(), value: s }
             }
             
@@ -865,21 +868,23 @@ impl Parser for DcbParser {
 /// String table for DCB file
 #[derive(Debug, Clone)]
 pub struct StringTable {
-    /// All strings indexed by ID
-    pub strings: Vec<String>,
-    /// Offset to ID mapping
-    pub by_offset: HashMap<u32, usize>,
+    /// Interned strings (shared)
+    pub interner: Arc<ThreadedRodeo>,
+    /// Spurs keyed by insertion order (for ID lookups)
+    pub spurs: Vec<Spur>,
+    /// Offset to spur mapping
+    pub by_offset: HashMap<u32, Spur>,
 }
 
 impl StringTable {
     /// Get string by ID
-    pub fn get(&self, id: usize) -> Option<&String> {
-        self.strings.get(id)
+    pub fn get(&self, id: usize) -> Option<&str> {
+        self.spurs.get(id).map(|spur| self.interner.resolve(spur))
     }
     
     /// Get string by offset
-    pub fn get_by_offset(&self, offset: u32) -> Option<&String> {
-        self.by_offset.get(&offset).and_then(|id| self.strings.get(*id))
+    pub fn get_by_offset(&self, offset: u32) -> Option<&str> {
+        self.by_offset.get(&offset).map(|spur| self.interner.resolve(spur))
     }
 }
 

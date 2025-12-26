@@ -1,6 +1,10 @@
 [package]
 name = "starbreaker-core"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+description = "Core types and utilities for StarBreaker"
+license = "MIT"
 
 [dependencies]
+thiserror = "2.0"
+serde = { version = "1.0", features = ["derive"] }

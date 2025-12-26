@@ -222,7 +222,7 @@ impl LazyDataCore {
                 reader.read_exact(&mut buf)?;
                 let offset = u32::from_le_bytes(buf);
                 let s = self.strings.get_by_offset(offset)
-                    .cloned()
+                    .map(str::to_owned)
                     .unwrap_or_default();
                 RecordValue::String(s)
             }

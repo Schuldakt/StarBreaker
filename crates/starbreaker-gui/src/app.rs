@@ -71,7 +71,7 @@ impl StarBreakerApp {
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::O)) {
             // Open P4K file
             self.debug_console.info("Opening file dialog...");
-            self.file_browser.open_archive_dialog();
+            self.file_browser.open_archive_dialog(&mut self.debug_console);
         }
         
         if ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::F)) {
@@ -111,7 +111,7 @@ impl eframe::App for StarBreakerApp {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Open P4K Archive...").clicked() {
-                        self.file_browser.open_archive_dialog();
+                        self.file_browser.open_archive_dialog(&mut self.debug_console);
                         ui.close_menu();
                     }
                     
@@ -170,12 +170,23 @@ impl eframe::App for StarBreakerApp {
             self.status.show(ui);
         });
         
+        // Debug console (bottom panel, above status bar)
+        if self.debug_console.show {
+            egui::TopBottomPanel::bottom("debug_console")
+                .resizable(true)
+                .default_height(200.0)
+                .height_range(100.0..=400.0)
+                .show(ctx, |ui| {
+                    self.debug_console.show(ui);
+                });
+        }
+        
         // File browser (left panel)
         egui::SidePanel::left("file_browser")
             .default_width(300.0)
             .resizable(true)
             .show(ctx, |ui| {
-                self.file_browser.show(ui);
+                self.file_browser.show(ui, &mut self.debug_console);
             });
         
         // Inspector (right panel)
@@ -202,8 +213,5 @@ impl eframe::App for StarBreakerApp {
         
         // Show settings dialog if open
         self.settings.show(ctx, &mut self.theme);
-        
-        // Show debug console if open
-        self.debug_console.show(ctx);
     }
 }

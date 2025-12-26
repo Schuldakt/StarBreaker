@@ -74,8 +74,13 @@ This document tracks all development tasks, organized by priority and component.
 - [x] ✅ Define parser trait system (`traits.rs`)
 - [x] ✅ Implement parser registry (`registry.rs`)
 - [x] ✅ Set up error types with thiserror
-- [ ] 📋 Add logging with tracing
-- [ ] 📋 Set up CI/CD pipeline (GitHub Actions)
+- [x] ✅ Add logging with tracing
+  - File: `crates/starbreaker-parsers/src/logging.rs`
+  - Feature-gated tracing support with configurable levels
+- [x] ✅ Set up CI/CD pipeline (GitHub Actions)
+  - File: `.github/workflows/ci.yml`
+  - Multi-platform builds (Linux, Windows, macOS)
+  - Automated testing, linting, and release builds
 
 ### P4K Parser (`starbreaker-parsers/src/p4k/`)
 
@@ -112,11 +117,14 @@ This document tracks all development tasks, organized by priority and component.
 
 ### Testing
 
-- [ ] 📋 Unit tests for P4K parser
+- [x] ✅ Unit tests for P4K parser
+  - File: `crates/starbreaker-parsers/src/p4k/tests.rs`
+  - Comprehensive tests for entries, archives, patterns, tree building
 - [ ] 📋 Unit tests for DCB parser
 - [ ] 📋 Integration tests with sample files
-- [ ] 📋 Property-based tests with proptest
-- [ ] 📋 Benchmarks with criterion
+- [x] ✅ Property-based tests with proptest
+- [x] ✅ Benchmarks with criterion
+  - File: `crates/starbreaker-parsers/benches/parser_benchmarks.rs`
 
 ---
 
@@ -189,105 +197,73 @@ This document tracks all development tasks, organized by priority and component.
 - [x] ✅ Define mount point abstraction
 - [x] ✅ Implement path resolution
 - [x] ✅ File/directory enumeration
+- [x] ✅ Unified error handling
+- [x] ✅ Local filesystem mount
+- [x] ✅ Multiple mount support
 
 ### Mount Points
 
-- [x] ✅ P4K archive mount (stub)
+- [x] ✅ P4K archive mount
+  - File: `crates/starbreaker-vfs/src/mounts/p4k.rs`
+  - Full implementation with LRU caching
 - [x] ✅ Local filesystem mount
 - [ ] 📋 DCB virtual folders (by struct type)
-- [ ] 📋 Overlay mount (multiple sources)
+- [ ] 📋 Overlay mount (combine multiple sources)
 
-### Search & Index
+### VFS Features
 
-- [ ] 📋 Full-text search index
-- [ ] 📋 Metadata index (size, type, date)
-- [ ] 📋 Regex pattern matching
-- [ ] 📋 Search result caching
-
-### File Operations
-
-- [x] ✅ Read file contents
-- [x] ✅ Stream large files
-- [x] ✅ Extract to filesystem
-- [x] ✅ Batch extraction
+- [x] ✅ LRU decompression cache
+- [ ] 📋 File watching for local mounts
+- [ ] 📋 Write support for local mounts
+- [ ] 📋 Async I/O support
 
 ---
 
 ## Phase 4: Export Pipeline (Weeks 7-8)
 
-### FBX Exporter (`starbreaker-export/src/fbx/`)
+### Model Export (`starbreaker-export/`)
 
-- [ ] 📋 🟠 FBX ASCII writer
-- [ ] 📋 Geometry export (vertices, normals, UVs)
-- [ ] 📋 Material export
-- [ ] 📋 Skeleton/bone export
-- [ ] 📋 Skin weights export
-- [ ] 📋 Node hierarchy export
-- [ ] 📋 Animation export (if applicable)
+- [ ] 📋 glTF 2.0 exporter
+  - [ ] Mesh geometry
+  - [ ] Materials (PBR conversion)
+  - [ ] Skeleton/bones
+  - [ ] Animations
+  - [ ] Binary (.glb) output
+- [ ] 📋 FBX exporter
+  - [ ] ASCII FBX format
+  - [ ] Binary FBX format
+- [ ] 📋 OBJ exporter (simple mesh only)
 
-### glTF Exporter (`starbreaker-export/src/gltf/`)
+### Texture Export
 
-- [x] ✅ glTF 2.0 JSON structure
-- [x] ✅ Binary buffer generation (.bin)
-- [x] ✅ GLB single-file export
-- [x] ✅ Mesh primitives
-- [x] ✅ PBR materials
-- [ ] 📋 Skeleton/skin export
-- [ ] 📋 Draco compression (optional)
+- [ ] 📋 PNG export
+- [ ] 📋 TGA export
+- [ ] 📋 Keep original DDS option
 
-### JSON Exporter (`starbreaker-export/src/json/`)
+### Data Export
 
-- [x] ✅ DCB DataCore export
-- [x] ✅ Record export with property values
-- [x] ✅ CGF mesh metadata export
-- [x] ✅ P4K archive index export
-- [x] ✅ Pretty-print and compact modes
-
-### Texture Converter (`starbreaker-export/src/textures/`)
-
-- [x] ✅ DDS to PNG conversion
-- [x] ✅ DDS to TGA conversion
-- [x] ✅ BC1-BC5 decompression
-- [ ] 📋 BC6H/BC7 decompression (texpresso limitation)
-- [x] ✅ Normal map handling (DX to OpenGL conversion)
-- [x] ✅ Mipmap extraction
-- [x] ✅ Batch conversion
-
-### Data Exporters (`starbreaker-export/src/json/`)
-
-- [ ] 📋 Ship data to JSON
-- [ ] 📋 Weapon stats to JSON
-- [ ] 📋 Item database export
-- [ ] 📋 Localization export
-- [ ] 📋 CSV export option
+- [ ] 📋 JSON export for DCB records
+- [ ] 📋 CSV export for tabular data
+- [ ] 📋 XML export
 
 ---
 
 ## Phase 5: GUI Application (Weeks 9-12)
 
-### Framework Setup (`starbreaker-gui/`)
+### Main Window (`starbreaker-gui/`)
 
-- [x] ✅ Set up egui + eframe
-- [x] ✅ Application state management
-- [x] ✅ Theme configuration (dark/light)
-- [x] ✅ Keyboard shortcuts
-- [x] ✅ Window management
+- [x] ✅ Basic egui/eframe setup
+- [x] ✅ Theme configuration
+- [ ] 📋 Menu bar (File, Edit, View, Tools, Help)
+- [ ] 📋 Toolbar
+- [ ] 📋 Status bar
 
 ### File Browser Panel
 
-- [x] ✅ Tree view widget
-- [x] ✅ Lazy loading for large directories
-- [x] ✅ File type icons
-- [x] ✅ Context menu (extract, export, copy path)
-- [ ] 📋 Drag and drop support
+- [ ] 📋 Tree view for P4K contents
+- [ ] 📋 List view alternative
 - [ ] 📋 Breadcrumb navigation
-
-### Preview Panel
-
-- [x] ✅ Text file viewer
-- [x] ✅ Hex viewer for binary
-- [ ] 📋 JSON/XML syntax highlighting
-- [x] ✅ Image viewer (DDS, PNG, etc.)
+- [ ] 📋 Context menus
 
 ### 3D Preview (`starbreaker-render/`)
 
@@ -364,7 +340,7 @@ This document tracks all development tasks, organized by priority and component.
 
 - [ ] 📋 Version tagging
 - [ ] 📋 Changelog generation
-- [ ] 📋 GitHub release automation
+- [x] ✅ GitHub release automation (in CI workflow)
 - [ ] 📋 Update checker in app
 
 ---
@@ -373,31 +349,31 @@ This document tracks all development tasks, organized by priority and component.
 
 ### Memory Optimizations
 
-- [ ] ⚡ 🟡 String interning for DCB (`lasso` crate)
+- [ ] ⚡ 🟡 String interning for DCB (`lasso` crate) - Configured but not implemented
 - [ ] ⚡ 🟡 SmallVec for vertex UVs
-- [ ] ⚡ 🟡 Lazy record loading
-- [ ] ⚡ 🟡 Decompression cache with LRU eviction
+- [x] ⚡ 🟡 Lazy record loading - Implemented in LazyDataCore
+- [x] ⚡ 🟡 Decompression cache with LRU eviction - In VFS P4K mount
 - [ ] ⚡ 🟢 Arena allocator for parsing
 
 ### CPU Optimizations
 
-- [ ] ⚡ 🟠 Parallel chunk parsing (Rayon)
+- [ ] ⚡ 🟠 Parallel chunk parsing (Rayon) - Feature-gated, not implemented
 - [ ] ⚡ 🟠 Parallel file extraction
 - [ ] ⚡ 🟡 SIMD for vertex processing
 - [ ] ⚡ 🟢 Profile-guided optimization (PGO)
 
 ### I/O Optimizations
 
-- [ ] ⚡ 🟠 Memory-mapped file support
+- [ ] ⚡ 🟠 Memory-mapped file support - Feature-gated, not implemented
 - [ ] ⚡ 🟡 Buffered sequential reads
 - [ ] ⚡ 🟡 Async I/O for GUI responsiveness
 - [ ] ⚡ 🟢 Prefetching for tree navigation
 
 ### Build Optimizations
 
-- [ ] ⚡ 🟡 LTO (Link-Time Optimization)
-- [ ] ⚡ 🟡 Single codegen unit for release
-- [ ] ⚡ 🟢 Strip symbols in release
+- [x] ⚡ 🟡 LTO (Link-Time Optimization) - Configured in Cargo.toml
+- [x] ⚡ 🟡 Single codegen unit for release - Configured in Cargo.toml
+- [x] ⚡ 🟢 Strip symbols in release - Configured in Cargo.toml
 
 ---
 
@@ -408,7 +384,7 @@ This document tracks all development tasks, organized by priority and component.
 - [x] ✅ README.md
 - [ ] 📋 Installation guide
 - [ ] 📋 Quick start tutorial
-- [ ] 📋 CLI command reference
+- [x] ✅ CLI command reference - In CLI binary help
 - [ ] 📋 GUI user guide
 - [ ] 📋 FAQ
 
@@ -437,15 +413,32 @@ This document tracks all development tasks, organized by priority and component.
 
 ---
 
+## CLI Tool
+
+> Added: December 2025
+
+- [x] ✅ CLI binary (`src/bin/starbreaker-cli.rs`)
+- [x] ✅ List command - List P4K archive contents
+- [x] ✅ Extract command - Extract files from P4K
+- [x] ✅ Info command - Show file/archive information
+- [x] ✅ Search command - Search for files
+- [x] ✅ DCB command - Query DataCore database
+- [x] ✅ Diff command - Compare two archives
+- [x] ✅ Stats command - Show archive statistics
+- [ ] 📋 Export command - Full implementation
+- [ ] 📋 GUI launch command
+
+---
+
 ## Future Features (Backlog)
 
 > These are ideas for post-1.0 releases
 
 ### Version Comparison Tool
-- [ ] 📋 Compare two P4K archives
-- [ ] 📋 Show added/removed/modified files
+- [x] ✅ Compare two P4K archives (in CLI diff command)
+- [x] ✅ Show added/removed/modified files
 - [ ] 📋 Content diff for text files
-- [ ] 📋 Export diff report
+- [x] ✅ Export diff report (JSON)
 
 ### Ship Loadout Builder
 - [ ] 📋 Extract ship components from DCB
@@ -483,15 +476,29 @@ This document tracks all development tasks, organized by priority and component.
 
 | Phase | Status | Completion |
 |-------|--------|------------|
-| Bug Fixes | 🔨 In Progress | 0% |
-| Phase 1: Foundation | 🔨 In Progress | 70% |
-| Phase 2: Parsers | 🔨 In Progress | 40% |
-| Phase 3: VFS | 📋 Planned | 0% |
-| Phase 4: Export | 📋 Planned | 0% |
-| Phase 5: GUI | 📋 Planned | 0% |
-| Phase 6: Release | 📋 Planned | 0% |
+| Bug Fixes | ✅ Complete | 100% |
+| Phase 1: Foundation | ✅ Complete | 95% |
+| Phase 2: Parsers | 🔨 In Progress | 75% |
+| Phase 3: VFS | ✅ Complete | 90% |
+| Phase 4: Export | 📋 Planned | 5% |
+| Phase 5: GUI | 🔨 In Progress | 30% |
+| Phase 6: Release | 📋 Planned | 10% |
 
-**Overall Progress: ~25%**
+**Overall Progress: ~55%**
+
+---
+
+## Recent Updates
+
+### December 2025
+- Added GitHub Actions CI/CD workflow
+- Implemented CLI tool with comprehensive commands
+- Added tracing/logging support (feature-gated)
+- Created P4K unit tests with proptest
+- Implemented VFS with P4K mount and LRU caching
+- Added unified error types in starbreaker-core
+- Configured build optimizations (LTO, strip, codegen-units)
+- Created benchmark suite
 
 ---
 
@@ -508,4 +515,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-*This document is updated regularly. Last review: December 2024*
+*This document is updated regularly. Last review: December 2025*

@@ -1,8 +1,20 @@
 [package]
 name = "starbreaker-vfs"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+description = "Virtual file system for StarBreaker"
+license = "MIT"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
+# Core
 thiserror = "2.0"
+parking_lot = "0.12"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+
+# Parser integration
+starbreaker-parsers = { path = "../starbreaker-parsers" }
+
+[dev-dependencies]
+tempfile = "3.10"

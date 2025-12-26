@@ -37,6 +37,8 @@ pub use bones::{Skeleton, Bone, BonePhysics};
 use std::io::{Read, Seek, SeekFrom};
 use std::collections::HashMap;
 
+use rayon::prelude::*;
+
 use crate::traits::{
     Parser, ParseResult, ParseError,
     ParseOptions, ParseProgress, ParsePhase, ProgressCallback
@@ -252,6 +254,11 @@ pub enum PhysicsProxyType {
 pub struct CgfParser;
 
 impl CgfParser {
+    fn parse_chunks_parallel(&self, chunks: &[ChunkHeader], data: &[u8]) -> ParseResult<Vec<Chunk>> {
+        chunks.par_iter()
+            .map(|header| self.parse_chunk(header, data))
+            .collect()
+    }
     /// Create a new CGF parser
     pub fn new() -> Self {
         Self

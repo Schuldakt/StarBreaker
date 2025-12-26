@@ -352,6 +352,15 @@ pub trait Exportable {
     fn export_binary(&self) -> ParseResult<Vec<u8>>;
 }
 
+/// Trait for progress streaming for GUI
+pub trait AsyncParser: Parser {
+    async fn parse_stream<R: AsyncRead + AsyncSeek>(
+        &self,
+        reader: R,
+        progress_tx: mpsc::Sender<ParseProgress>,
+    ) -> ParseResult<Self::Output>;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

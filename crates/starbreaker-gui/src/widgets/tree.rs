@@ -86,6 +86,11 @@ impl TreeView {
             state: TreeState::new(),
         }
     }
+
+    /// Force a node's expanded state
+    pub fn set_expanded(&mut self, path: &str, expanded: bool) {
+        self.state.expanded.insert(path.to_string(), expanded);
+    }
     
     /// Show tree view UI
     pub fn show<F>(&mut self, ui: &mut egui::Ui, root: &TreeNode, on_select: &mut F)

@@ -1,7 +1,14 @@
 [package]
-name = "StarBreaker"
+name = "starbreaker"
 version = "0.1.0"
 edition = "2021"
+description = "A powerful data mining and asset extraction tool for Star Citizen"
+license = "MIT"
+readme = "docs/README.md"
+repository = "https://github.com/yourusername/starbreaker"
+keywords = ["star-citizen", "data-mining", "asset-extraction", "p4k", "cgf"]
+categories = ["command-line-utilities", "game-development", "parser-implementations"]
+default-run = "starbreaker"
 
 [workspace]
 resolver = "2"
@@ -13,9 +20,10 @@ members = [
     "crates/starbreaker-parsers",
     "crates/starbreaker-render",
     "crates/starbreaker-vfs"
-    ]
+]
 
 [dependencies]
+# Internal crates
 starbreaker-core = { path = "crates/starbreaker-core" }
 starbreaker-datacore = { path = "crates/starbreaker-datacore" }
 starbreaker-export = { path = "crates/starbreaker-export" }
@@ -23,6 +31,58 @@ starbreaker-gui = { path = "crates/starbreaker-gui" }
 starbreaker-parsers = { path = "crates/starbreaker-parsers" }
 starbreaker-render = { path = "crates/starbreaker-render" }
 starbreaker-vfs = { path = "crates/starbreaker-vfs" }
+
 # GUI dependencies
 eframe = "0.29"
 egui = "0.29"
+
+# CLI dependencies
+clap = { version = "4.5", features = ["derive"] }
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde_json = "1.0"
+
+[[bin]]
+name = "starbreaker"
+path = "src/main.rs"
+
+[[bin]]
+name = "starbreaker-cli"
+path = "src/bin/starbreaker-cli.rs"
+
+# Profile configurations for optimized builds
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.dev.package."*"]
+opt-level = 2  # Optimize dependencies even in dev mode
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+strip = false
+
+[profile.bench]
+inherits = "release"
+debug = true
+
+# Workspace-wide lints
+[workspace.lints.rust]
+unsafe_code = "warn"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
+unwrap_used = "warn"
+expect_used = "warn"

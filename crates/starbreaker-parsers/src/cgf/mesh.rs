@@ -2,6 +2,7 @@
 //! CGF mesh data structures
 
 use serde::{Deserialize, Serialize};
+use smallvec::SmallVec;
 
 /// A 3D mesh from CGF file
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -213,9 +214,9 @@ pub struct Vertex {
     /// Normal vector
     pub normal: [f32; 3],
     /// UV coordinates (multiple channels)
-    pub uv: Vec<[f32; 2]>,
+    pub uv: SmallVec<[f32; 2]>,
     /// Vertex color (RGBA)
-    pub color: Option<[u8; 4]>,
+    pub color: SmallVec<[u8; 4]>,
     /// Tangent vector (with handedness in W)
     pub tangent: Option<[f32; 4]>,
     /// Bone weights (up to 4 influences)

@@ -1,8 +1,12 @@
 //! VFS mount point abstraction
 
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
+use std::io::Cursor;
+use std::sync::Arc;
+use crate::path;
 use crate::node::VfsNode;
+use starbreaker_parsers::{P4kArchive, P4kCompression, P4kEntry};
 
 /// Result type for mount operations
 pub type MountResult<T> = Result<T, MountError>;
@@ -72,17 +76,109 @@ pub struct P4kMount {
     id: usize,
     name: String,
     archive_path: PathBuf,
-    // Will store parsed P4K data when implemented
+    archive: Arc<P4kArchive>,
 }
 
 impl P4kMount {
     /// Create a new P4K archive mount
-    pub fn new(id: usize, name: impl Into<String>, archive_path: impl AsRef<Path>) -> Self {
+    pub fn new(
+        id: usize,
+        name: impl Into<String>,
+        archive_path: impl AsRef<Path>,
+        archive: Arc<P4kArchive>,
+    ) -> Self {
         Self {
             id,
             name: name.into(),
             archive_path: archive_path.as_ref().to_path_buf(),
+            archive,
         }
+    }
+
+    /// Normalize and trim VFS path to archive-relative form
+    fn normalize_path(&self, path: &str) -> String {
+        let normalized = path::normalize_path(path);
+        normalized.trim_start_matches('/').trim_end_matches('/').to_string()
+    }
+
+    /// Lookup an entry by normalized VFS path
+    fn find_entry(&self, path: &str) -> Option<&P4kEntry> {
+        if path.is_empty() {
+            return None;
+        }
+
+        if let Some(entry) = self.archive.get(path) {
+            return Some(entry);
+        }
+
+        // Some directory entries include a trailing slash
+        if !path.ends_with('/') {
+            let mut with_slash = String::with_capacity(path.len() + 1);
+            with_slash.push_str(path);
+            with_slash.push('/');
+            if let Some(entry) = self.archive.get(&with_slash) {
+                return Some(entry);
+            }
+        }
+
+        None
+    }
+
+    /// Convert a P4K entry to a VFS node
+    fn entry_to_node(&self, entry: &P4kEntry) -> VfsNode {
+        if entry.is_directory {
+            VfsNode::new_directory(entry.filename(), self.id)
+        } else {
+            VfsNode::new_file(entry.filename(), entry.uncompressed_size, self.id)
+        }
+    }
+
+    /// Read and decompress a P4K entry into memory
+    fn read_entry_data(&self, entry: &P4kEntry) -> MountResult<Vec<u8>> {
+        const LOCAL_HEADER_SIGNATURE: u32 = 0x0403_4B50;
+
+        let mut file = std::fs::File::open(&self.archive_path)?;
+        file.seek(SeekFrom::Start(entry.local_header_offset))?;
+
+        let mut local_header = [0u8; 30];
+        file.read_exact(&mut local_header)?;
+
+        let sig = u32::from_le_bytes([
+            local_header[0],
+            local_header[1],
+            local_header[2],
+            local_header[3],
+        ]);
+
+        if sig != LOCAL_HEADER_SIGNATURE {
+            return Err(MountError::InvalidPath(format!(
+                "Invalid local header signature for {}", entry.path
+            )));
+        }
+
+        let name_len = u16::from_le_bytes([local_header[26], local_header[27]]) as u64;
+        let extra_len = u16::from_le_bytes([local_header[28], local_header[29]]) as u64;
+
+        // Skip filename and extra fields to reach data
+        file.seek(SeekFrom::Current((name_len + extra_len) as i64))?;
+
+        let mut compressed = vec![0u8; entry.compressed_size as usize];
+        file.read_exact(&mut compressed)?;
+
+        let data = P4kCompression::decompress(
+            &compressed,
+            entry.compression,
+            entry.uncompressed_size as usize,
+        )
+        .map_err(|e| MountError::InvalidPath(e.to_string()))?;
+
+        if !P4kCompression::verify_crc32(&data, entry.crc32) {
+            return Err(MountError::InvalidPath(format!(
+                "CRC mismatch for {}", entry.path
+            )));
+        }
+
+        Ok(data)
     }
 }
 
@@ -96,33 +192,55 @@ impl MountPoint for P4kMount {
     }
     
     fn exists(&self, _path: &str) -> bool {
-        // TODO: implement with P4kArchive
-        false
+        let rel = self.normalize_path(_path);
+        rel.is_empty() || self.find_entry(&rel).is_some()
     }
     
     fn get_node(&self, path: &str) -> MountResult<VfsNode> {
-        // TODO: implement with P4kArchive
-        Err(MountError::PathNotFound { path: path.to_string() })
+        let rel = self.normalize_path(path);
+
+        if rel.is_empty() {
+            return Ok(VfsNode::new_directory("/", self.id));
+        }
+
+        if let Some(entry) = self.find_entry(&rel) {
+            Ok(self.entry_to_node(entry))
+        } else {
+            Err(MountError::PathNotFound { path: path.to_string() })
+        }
     }
     
     fn list_directory(&self, path: &str) -> MountResult<Vec<VfsNode>> {
-        // TODO: implement with P4kArchive
-        Err(MountError::PathNotFound { path: path.to_string() })
+        let rel = self.normalize_path(path);
+        let entries = self.archive.list_directory(&rel);
+
+        if entries.is_empty() {
+            return Err(MountError::PathNotFound { path: path.to_string() });
+        }
+
+        Ok(entries.into_iter().map(|e| self.entry_to_node(e)).collect())
     }
     
     fn open_file(&self, path: &str) -> MountResult<Box<dyn Read + Send>> {
-        // TODO: implement with P4kArchive
-        Err(MountError::PathNotFound { path: path.to_string() })
+        let rel = self.normalize_path(path);
+
+        let entry = self.find_entry(&rel)
+            .ok_or_else(|| MountError::PathNotFound { path: path.to_string() })?;
+
+        if entry.is_directory {
+            return Err(MountError::AccessDenied { path: path.to_string() });
+        }
+
+        let data = self.read_entry_data(entry)?;
+        Ok(Box::new(Cursor::new(data)))
     }
     
     fn file_count(&self) -> usize {
-        // TODO: implement with P4kArchive
-        0
+        self.archive.file_count()
     }
     
     fn total_size(&self) -> u64 {
-        // TODO: implement with P4kArchive
-        0
+        self.archive.total_uncompressed_size()
     }
 }
 

@@ -1,7 +1,7 @@
 [package]
 name = "starbreaker-gui"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 starbreaker-core = { path = "../starbreaker-core" }
@@ -9,10 +9,10 @@ starbreaker-parsers = { path = "../starbreaker-parsers" }
 starbreaker-vfs = { path = "../starbreaker-vfs" }
 starbreaker-export = { path = "../starbreaker-export" }
 
-eframe = "0.29"
-egui = "0.29"
-egui_extras = { version = "0.29", features = ["image"] }
-rfd = "0.15"  # File dialogs
+eframe = "0.33.3"
+egui = "0.33.3"
+egui_extras = { version = "0.33.3", features = ["image"] }
+rfd = "0.16.0"  # File dialogs
 parking_lot = "0.12"
 anyhow = "1.0"
 chrono = "0.4"

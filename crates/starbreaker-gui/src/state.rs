@@ -54,7 +54,7 @@ impl AppState {
         
         // Create VFS mount
         let vfs = VfsTree::new();
-        let mount = P4kMount::new(0, "game", &path);
+        let mount = P4kMount::new(0, "game", &path, archive.clone());
         vfs.add_mount(Arc::new(mount));
         
         self.vfs = Some(vfs);
